@@ -10,6 +10,7 @@
 #include "Formula/Formula/Formula.h"
 #include "Formula/Not/Not.h"
 #include "Formula/Or/Or.h"
+#include "Formula/Sequent/Sequent.h"
 #include "Formula/True/True.h"
 #include "ParseFormula/ParseFormula.h"
 #include "ParseFormulaNew/ParseFormulaNew.h"
@@ -145,9 +146,14 @@ void solve(arguments_struct &args) {
     if (args.verbose) {
     cout << "S4 reduction: " << formula->toString() << endl;
     }
+    Sequent sequent;
+    sequent.right_.insert(formula);
+    
+
     formula = formula->negatedNormalForm();
     formula = formula->simplify();
     formula = formula->modalFlatten();
+
     shared_ptr<Trieform> trie = TrieformFactory::makeTrie(formula, args.settings);
     trie->reduceClauses();
     trie->preprocess();

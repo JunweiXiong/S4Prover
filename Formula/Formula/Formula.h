@@ -29,6 +29,8 @@ public:
 
   virtual bool isPrimitive() const;
 
+  virtual bool isClassical() const;
+
   virtual bool operator==(const Formula &other) const = 0;
   virtual bool operator!=(const Formula &other) const = 0;
 

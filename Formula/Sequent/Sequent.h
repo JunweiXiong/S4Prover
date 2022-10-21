@@ -1,8 +1,14 @@
-#ifndef FORMULA_H
-#define FORMULA_H
+#ifndef SEQUENT_H
+#define SEQUENT_H
 
 #include "../../Defines/Defines.h"
+#include "../And/And.h"
 #include "../FEnum/FEnum.h"
+#include "../False/False.h"
+#include "../Formula/Formula.h"
+#include "../True/True.h"
+#include "../AtomGenerator/AtomGenerator.h"
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -10,50 +16,47 @@
 
 using namespace std;
 
-
-class Formula {
+class Sequent {
+  
 public:
-  Formula();
-  virtual ~Formula();
 
-  virtual string toString() const = 0;
-  virtual FormulaType getType() const = 0;
+  formula_set left_;
+  formula_set right_;
 
-  virtual shared_ptr<Formula> negatedNormalForm() = 0;
-  virtual shared_ptr<Formula> negate() = 0;
-  virtual shared_ptr<Formula> simplify() = 0;
-  virtual shared_ptr<Formula> modalFlatten() = 0;
-  virtual shared_ptr<Formula> s4reduction() = 0;
+  // Theta
+  formula_set blackbox_;
+  formula_set blackdia_;
 
-  virtual shared_ptr<Formula> clone() const = 0;
+  // Gamma
+  formula_set boxL_;
+  formula_set boxdiaL_;
+  formula_set boxLbox_;
+  formula_set boxLdia_;
 
-  virtual bool isPrimitive() const;
+  formula_set diaL_;
 
-  virtual bool operator==(const Formula &other) const = 0;
-  virtual bool operator!=(const Formula &other) const = 0;
+  // Gamma_cl
+  formula_set classicL_;
 
-  virtual size_t hash() const = 0;
+  // Delta
+  formula_set boxR_;
 
-  static unordered_set<int> discoveredModalities;
+  // Delta_cl
+  formula_set classicR_;
+
+
+
+  Sequent(const formula_set &left = formula_set(), const formula_set &right = formula_set(), const formula_set &blackbox = formula_set(),
+          const formula_set &blackdia = formula_set(), const formula_set &boxL = formula_set(),const formula_set &boxdiaL = formula_set(),
+          const formula_set &boxLbox = formula_set(), const formula_set &boxLdia = formula_set(), const formula_set &diaL = formula_set(), 
+          const formula_set &classicL = formula_set(), const formula_set &boxR = formula_set(), const formula_set &classicR = formula_set());
+  ~Sequent();
+
+  vector<Sequent> normalReduction();
+  bool isNormal();
+  bool isCluster();
+  bool isRegular();
+
 };
-
-struct Deref {
-  struct Hash {
-    template <typename T>
-    std::size_t operator()(std::shared_ptr<T> const &p) const {
-      return (*p).hash();
-    }
-  };
-  struct Compare {
-    template <typename T>
-    size_t operator()(std::shared_ptr<T> const &a,
-                      std::shared_ptr<T> const &b) const {
-      return *a == *b;
-    }
-  };
-};
-
-typedef unordered_set<shared_ptr<Formula>, Deref::Hash, Deref::Compare>
-    formula_set;
 
 #endif

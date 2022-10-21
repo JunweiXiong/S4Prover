@@ -16,6 +16,7 @@ using namespace std;
 class Not : public Formula, public enable_shared_from_this<Not> {
 private:
   shared_ptr<Formula> subformula_;
+  bool classic_;
 
 public:
   Not(shared_ptr<Formula> subformula);
@@ -35,6 +36,8 @@ public:
   shared_ptr<Formula> clone() const;
 
   bool isPrimitive() const;
+  
+  bool isClassical() const;
 
   static shared_ptr<Formula> create(shared_ptr<Formula> subformula);
 

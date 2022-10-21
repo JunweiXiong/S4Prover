@@ -11,6 +11,11 @@ Or::Or(const formula_set &orSet) {
     }
   }
 }
+
+
+
+
+
 Or::~Or() {
 #if DEBUG_DESTRUCT
   cout << "DESTRUCTING OR" << endl;
@@ -138,11 +143,20 @@ shared_ptr<Formula> Or::modalFlatten() {
 
 
 shared_ptr<Formula> Or::s4reduction(){
-  formula_set newOrSet(orSet_.size());
-  
-  for (shared_ptr<Formula> formula : orSet_) {
-    newOrSet.insert(formula->s4reduction());
+  formula_set newOrSet;
+
+  shared_ptr<Formula> first = *orSet_.begin();
+  orSet_.erase(first);
+
+  shared_ptr<Formula> second;
+  if (orSet_.size()>1){
+      second = Or::create(orSet_);
+  }else{
+      second = *orSet_.begin();
   }
+  
+  newOrSet.insert(first->s4reduction());
+  newOrSet.insert(second->s4reduction());
   
   orSet_ = newOrSet;
   return shared_from_this();
