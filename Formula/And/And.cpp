@@ -19,6 +19,15 @@ And::~And() {
 #endif
 }
 
+bool And::isClassical() const {
+  for (shared_ptr<Formula> f: andSet_){
+    if (!f->isClassical()){
+      return false;
+    }
+  }
+  return true;
+}
+
 formula_set And::getSubformulas() const { return andSet_; }
 const formula_set *And::getSubformulasReference() const { return &andSet_; };
 

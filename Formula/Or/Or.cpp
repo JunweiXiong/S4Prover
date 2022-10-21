@@ -12,8 +12,14 @@ Or::Or(const formula_set &orSet) {
   }
 }
 
-
-
+bool Or::isClassical() const {
+  for (shared_ptr<Formula> f:orSet_){
+    if (!f->isClassical()){
+      return false;
+    }
+  }
+  return true;
+}
 
 
 Or::~Or() {

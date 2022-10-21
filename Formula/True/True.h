@@ -28,6 +28,7 @@ public:
   shared_ptr<Formula> clone() const;
 
   bool isPrimitive() const;
+  bool isClassical() const {return true;};
 
   static shared_ptr<Formula> create();
 

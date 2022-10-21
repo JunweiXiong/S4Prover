@@ -18,6 +18,7 @@ using namespace std;
 class Or : public Formula, public enable_shared_from_this<Or> {
 private:
   formula_set orSet_;
+  bool classic_;
 
 public:
   Or(const formula_set &orSet);
@@ -37,6 +38,8 @@ public:
   shared_ptr<Formula> simplify();
   shared_ptr<Formula> modalFlatten();
   shared_ptr<Formula> s4reduction();
+
+  bool isClassical() const;
 
   shared_ptr<Formula> clone() const;
 

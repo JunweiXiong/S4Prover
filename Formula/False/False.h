@@ -13,6 +13,7 @@
 using namespace std;
 
 class False : public Formula, public enable_shared_from_this<False> {
+
 public:
   False();
   ~False();
@@ -29,6 +30,7 @@ public:
   shared_ptr<Formula> clone() const;
 
   bool isPrimitive() const;
+  bool isClassical() const {return true;};
 
   static shared_ptr<Formula> create();
 
