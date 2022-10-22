@@ -19,7 +19,6 @@ using namespace std;
 class And : public Formula, public enable_shared_from_this<And> {
 private:
   formula_set andSet_;
-  // bool classic_;
 
 public:
   And(const formula_set &andSet);
@@ -39,9 +38,9 @@ public:
   shared_ptr<Formula> simplify();
   shared_ptr<Formula> modalFlatten();
   shared_ptr<Formula> s4reduction();
+  bool isClassical();
 
   shared_ptr<Formula> clone() const;
-  bool isClassical() const;
 
   static shared_ptr<Formula> create(formula_set andList);
 

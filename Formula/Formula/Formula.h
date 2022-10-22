@@ -24,12 +24,11 @@ public:
   virtual shared_ptr<Formula> simplify() = 0;
   virtual shared_ptr<Formula> modalFlatten() = 0;
   virtual shared_ptr<Formula> s4reduction() = 0;
+  virtual bool isClassical() = 0;
 
   virtual shared_ptr<Formula> clone() const = 0;
 
   virtual bool isPrimitive() const;
-
-  virtual bool isClassical() const;
 
   virtual bool operator==(const Formula &other) const = 0;
   virtual bool operator!=(const Formula &other) const = 0;

@@ -121,21 +121,21 @@ Solution TrieformProverK::prove(literal_set assumptions) {
       current_trie->convertAssumptionsToBitset(current_assumption);
 
     // print out assumption   
-    cout << "----------------------------" << endl;
+    // cout << "----------------------------" << endl;
 
-    cout << "total assumption start" << endl;
-    for (auto x : trie_stack.top()->idMap){
-      cout << x.first << x.second << endl;
-    }
-    cout << "total assumption end" << endl;
+    // cout << "total assumption start" << endl;
+    // for (auto x : trie_stack.top()->idMap){
+    //   cout << x.first << x.second << endl;
+    // }
+    // cout << "total assumption end" << endl;
     
-    cout << "assumption size: " << trie_stack.top()->assumptionsSize << endl;
-    cout << assumption_stack.size() << " assumption start" << endl;
-    for (auto i : current_assumption){
-      cout << i.getName() << i.getPolarity() << " ";
-    }
-    cout << endl;
-    cout << assumption_stack.size() << " assumption end" << endl;
+    // cout << "assumption size: " << trie_stack.top()->assumptionsSize << endl;
+    // cout << assumption_stack.size() << " assumption start" << endl;
+    // for (auto i : current_assumption){
+    //   cout << i.getName() << i.getPolarity() << " ";
+    // }
+    // cout << endl;
+    // cout << assumption_stack.size() << " assumption end" << endl;
 
     
     // p1 & p2 & []p3 & <>p4 & <>p5 & <>~p6

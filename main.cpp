@@ -10,7 +10,6 @@
 #include "Formula/Formula/Formula.h"
 #include "Formula/Not/Not.h"
 #include "Formula/Or/Or.h"
-#include "Formula/Sequent/Sequent.h"
 #include "Formula/True/True.h"
 #include "ParseFormula/ParseFormula.h"
 #include "ParseFormulaNew/ParseFormulaNew.h"
@@ -92,6 +91,14 @@ static struct argp argp = {options, parse_opt, args_doc, doc, 0, 0, 0};
 
 void solve(arguments_struct &args);
 
+// int main(int argc, char *argv[]){
+//   shared_ptr<Formula> atom = Atom::create("x1");
+//   shared_ptr<Formula> box = Box::create(1,1,atom);
+//   cout << atom->toString() << endl;
+//   cout << box->toString() << endl;
+
+// }
+
 int main(int argc, char *argv[]) {
   arguments_struct arguments;
 
@@ -146,14 +153,9 @@ void solve(arguments_struct &args) {
     if (args.verbose) {
     cout << "S4 reduction: " << formula->toString() << endl;
     }
-    Sequent sequent;
-    sequent.right_.insert(formula);
-    
-
     formula = formula->negatedNormalForm();
     formula = formula->simplify();
     formula = formula->modalFlatten();
-
     shared_ptr<Trieform> trie = TrieformFactory::makeTrie(formula, args.settings);
     trie->reduceClauses();
     trie->preprocess();

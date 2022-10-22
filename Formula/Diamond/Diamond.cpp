@@ -115,7 +115,7 @@ shared_ptr<Formula> Diamond::s4reduction(){
 }
 
 shared_ptr<Formula> Diamond::create(int modality, int power,
-                                    shared_ptr<Formula> subformula) {
+                                    const shared_ptr<Formula> &subformula) {
   if (power == 0) {
     return subformula;
   }
@@ -133,6 +133,10 @@ shared_ptr<Formula> Diamond::create(vector<int> modality,
     formula = Diamond::create(modality[i - 1], 1, formula);
   }
   return formula;
+}
+
+shared_ptr<Formula> Diamond::create(const shared_ptr<Formula> &subformula) {
+  return shared_ptr<Formula>(new Diamond(1, 1, subformula));
 }
 
 shared_ptr<Formula> Diamond::constructDiamondReduced() const {

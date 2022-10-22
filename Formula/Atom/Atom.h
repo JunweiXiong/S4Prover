@@ -30,11 +30,11 @@ public:
   shared_ptr<Formula> simplify();
   shared_ptr<Formula> modalFlatten();
   shared_ptr<Formula> s4reduction();
+  bool isClassical() {return true;};
 
   shared_ptr<Formula> clone() const;
 
   bool isPrimitive() const;
-  bool isClassical() const {return true;};
 
   static shared_ptr<Formula> create(string name);
 

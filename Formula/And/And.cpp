@@ -19,15 +19,6 @@ And::~And() {
 #endif
 }
 
-bool And::isClassical() const {
-  for (shared_ptr<Formula> f: andSet_){
-    if (!f->isClassical()){
-      return false;
-    }
-  }
-  return true;
-}
-
 formula_set And::getSubformulas() const { return andSet_; }
 const formula_set *And::getSubformulasReference() const { return &andSet_; };
 
@@ -155,6 +146,14 @@ shared_ptr<Formula> And::s4reduction(){
   return shared_from_this();
 }
 
+bool And::isClassical(){
+  for (shared_ptr<Formula> formula : andSet_) {
+    if (!formula->isClassical()){
+      return false;
+    }
+  }
+  return true;
+}
 
 shared_ptr<Formula> And::create(formula_set andSet) {
   shared_ptr<Formula> falseFormula = False::create();

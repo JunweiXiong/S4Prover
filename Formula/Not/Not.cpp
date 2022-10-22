@@ -1,6 +1,6 @@
 #include "Not.h"
 
-Not::Not(shared_ptr<Formula> subformula) { classic_ = subformula->isClassical() ;subformula_ = subformula; }
+Not::Not(shared_ptr<Formula> subformula) { subformula_ = subformula; }
 Not::~Not() {
 #if DEBUG_DESTRUCT
   cout << "DESTRUCTING NOT" << endl;
@@ -103,4 +103,3 @@ size_t Not::hash() const {
 }
 
 bool Not::isPrimitive() const { return subformula_->isPrimitive(); }
-bool Not::isClassical() const { return classic_; }

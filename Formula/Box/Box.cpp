@@ -135,6 +135,11 @@ shared_ptr<Formula> Box::create(vector<int> modality,
   return formula;
 }
 
+shared_ptr<Formula> Box::create(const shared_ptr<Formula> &subformula) {
+
+  return shared_ptr<Formula>(new Box(1, 1, subformula));
+}
+
 shared_ptr<Formula> Box::constructBoxReduced() const {
   return Box::create(modality_, power_ - 1, subformula_);
 }

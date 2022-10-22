@@ -36,15 +36,17 @@ public:
   shared_ptr<Formula> simplify();
   shared_ptr<Formula> modalFlatten();
   shared_ptr<Formula> s4reduction();
+  bool isClassical() {return false;};
 
   shared_ptr<Formula> clone() const;
 
   shared_ptr<Formula> constructDiamondReduced() const;
 
   static shared_ptr<Formula> create(int modality, int power,
-                                    shared_ptr<Formula> subformula);
+                                    const shared_ptr<Formula> &subformula);
   static shared_ptr<Formula> create(vector<int> modality,
                                     const shared_ptr<Formula> &subformula);
+  static shared_ptr<Formula> create(const shared_ptr<Formula> &subformula);
 
   bool operator==(const Formula &other) const;
   bool operator!=(const Formula &other) const;

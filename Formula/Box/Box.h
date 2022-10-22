@@ -38,6 +38,7 @@ public:
   shared_ptr<Formula> simplify();
   shared_ptr<Formula> modalFlatten();
   shared_ptr<Formula> s4reduction();
+  bool isClassical() {return false;};
 
   shared_ptr<Formula> clone() const;
 
@@ -47,6 +48,7 @@ public:
                                     const shared_ptr<Formula> &subformula);
   static shared_ptr<Formula> create(vector<int> modality,
                                     const shared_ptr<Formula> &subformula);
+  static shared_ptr<Formula> create(const shared_ptr<Formula> &subformula);
 
   bool operator==(const Formula &other) const;
   bool operator!=(const Formula &other) const;
