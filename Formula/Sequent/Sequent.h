@@ -52,11 +52,13 @@ public:
           const formula_set &classicL = formula_set(), const formula_set &boxR = formula_set(), const formula_set &classicR = formula_set());
   ~Sequent();
 
-  Sequent Sequent::copy();
+  Sequent copy();
   vector<Sequent> normalReduction();
   bool isNormal();
   bool isCluster();
   bool isRegular();
+
+  string toString() const;
 
 };
 

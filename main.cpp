@@ -12,6 +12,7 @@
 #include "Formula/Or/Or.h"
 #include "Formula/True/True.h"
 #include "Formula/AtomGenerator/AtomGenerator.h"
+#include "Formula/Sequent/Sequent.h"
 #include "ParseFormula/ParseFormula.h"
 #include "ParseFormulaNew/ParseFormulaNew.h"
 #include <argp.h>
@@ -93,19 +94,38 @@ static struct argp argp = {options, parse_opt, args_doc, doc, 0, 0, 0};
 void solve(arguments_struct &args);
 
 int main(int argc, char *argv[]){
-  shared_ptr<Formula> atom = Atom::create("x1");
-  shared_ptr<Formula> box = Box::create(1,1,atom);
-  cout << atom->toString() << endl;
-  cout << box->toString() << endl;
+  arguments_struct arguments;
 
-  shared_ptr<Formula> a = AtomGenerator::generate();
-  shared_ptr<Formula> b = AtomGenerator::generate();
-  shared_ptr<Formula> c = AtomGenerator::generate();
+  argp_parse(&argp, argc, argv, 0, 0, &arguments);
+  solve(arguments);
 
-  cout << a->toString() << endl;
-  cout << b->toString() << endl;
-  cout << c->toString() << endl;
+}
 
+void solve(arguments_struct &args) {
+
+  shared_ptr<Formula> formula = ParseFormula(&args.filename).parseFormula();
+
+
+  if (args.verbose) {
+    cout << "Parsed: " << formula->toString() << endl;
+  }
+
+  formula = formula->s4reduction();
+  if (args.verbose) {
+  cout << "S4 reduction: " << formula->toString() << endl;
+
+  }
+  Sequent sequent(formula_set(),formula_set({formula}));
+  vector<Sequent> normalSquents = sequent.normalReduction();
+  if (args.verbose) {
+    for (const Sequent &s: normalSquents){
+      cout << s.toString() << endl;
+    }
+  }
+  
+  
+    
+    
 }
 
 // int main(int argc, char *argv[]) {
@@ -115,298 +135,298 @@ int main(int argc, char *argv[]){
 //   solve(arguments);
 // }
 
-void solve(arguments_struct &args) {
-#if DEBUG_TIME
-  auto start = chrono::steady_clock::now();
-#endif
-  auto start = chrono::steady_clock::now();
-  if (args.verbose) {
-    cout << "Begin" << endl;
-  }
-  auto read = chrono::steady_clock::now();
-#if DEBUG_PROGRESS
-  cout << "Begin" << endl;
-#endif
+// void solve(arguments_struct &args) {
+// #if DEBUG_TIME
+//   auto start = chrono::steady_clock::now();
+// #endif
+//   auto start = chrono::steady_clock::now();
+//   if (args.verbose) {
+//     cout << "Begin" << endl;
+//   }
+//   auto read = chrono::steady_clock::now();
+// #if DEBUG_PROGRESS
+//   cout << "Begin" << endl;
+// #endif
 
-#if DEBUG_TIME
-  auto read = chrono::steady_clock::now();
-#endif
+// #if DEBUG_TIME
+//   auto read = chrono::steady_clock::now();
+// #endif
 
-  // cout << "start parsing" << endl;
-  shared_ptr<Formula> formula = ParseFormula(&args.filename).parseFormula();
-  // string other = "a.p";
-  // shared_ptr<Formula> correct = ParseFormula(&other).parseFormula();
-  // cout << "Wrong" << formula->toString() << endl;
-  // cout << "Right" << correct->toString() << endl;
-  // cout << (*formula == *correct) << endl;
+//   // cout << "start parsing" << endl;
+//   shared_ptr<Formula> formula = ParseFormula(&args.filename).parseFormula();
+//   // string other = "a.p";
+//   // shared_ptr<Formula> correct = ParseFormula(&other).parseFormula();
+//   // cout << "Wrong" << formula->toString() << endl;
+//   // cout << "Right" << correct->toString() << endl;
+//   // cout << (*formula == *correct) << endl;
 
   
-  if (args.valid) {
-    // cout << "start not formula" << endl;
-    formula = Not::create(formula);
-  }
+//   if (args.valid) {
+//     // cout << "start not formula" << endl;
+//     formula = Not::create(formula);
+//   }
 
-#if DEBUG_TIME
-  auto parse = chrono::steady_clock::now();
-#endif
-#if DEBUG_PROGRESS
-  cout << "Parsed: " << formula->toString() << endl;
-#endif
-  auto parse = chrono::steady_clock::now();
-  if (args.verbose) {
-    cout << "Parsed: " << formula->toString() << endl;
-  }
+// #if DEBUG_TIME
+//   auto parse = chrono::steady_clock::now();
+// #endif
+// #if DEBUG_PROGRESS
+//   cout << "Parsed: " << formula->toString() << endl;
+// #endif
+//   auto parse = chrono::steady_clock::now();
+//   if (args.verbose) {
+//     cout << "Parsed: " << formula->toString() << endl;
+//   }
 
-  if (args.settings.reflexive && args.settings.transitive){
-    formula = formula->s4reduction();
-    if (args.verbose) {
-    cout << "S4 reduction: " << formula->toString() << endl;
-    }
-    formula = formula->negatedNormalForm();
-    formula = formula->simplify();
-    formula = formula->modalFlatten();
-    shared_ptr<Trieform> trie = TrieformFactory::makeTrie(formula, args.settings);
-    trie->reduceClauses();
-    trie->preprocess();
-    trie->removeTrueAndFalse();
-    trie -> prepareSAT();
-    bool satisfiable = trie->isSatisfiable();
-  if (args.valid) {
-    cout << (satisfiable ? "Invalid" : "Valid") << endl;
-  } else {
-    cout << (satisfiable ? "Satisfiable" : "Unsatisfiable") << endl;
-  }
-    return;
-  }
+//   if (args.settings.reflexive && args.settings.transitive){
+//     formula = formula->s4reduction();
+//     if (args.verbose) {
+//     cout << "S4 reduction: " << formula->toString() << endl;
+//     }
+//     formula = formula->negatedNormalForm();
+//     formula = formula->simplify();
+//     formula = formula->modalFlatten();
+//     shared_ptr<Trieform> trie = TrieformFactory::makeTrie(formula, args.settings);
+//     trie->reduceClauses();
+//     trie->preprocess();
+//     trie->removeTrueAndFalse();
+//     trie -> prepareSAT();
+//     bool satisfiable = trie->isSatisfiable();
+//   if (args.valid) {
+//     cout << (satisfiable ? "Invalid" : "Valid") << endl;
+//   } else {
+//     cout << (satisfiable ? "Satisfiable" : "Unsatisfiable") << endl;
+//   }
+//     return;
+//   }
 
 
 
-  // cout << "start nnf" << endl;
-  formula = formula->negatedNormalForm();
-  // correct = correct->negatedNormalForm();
+//   // cout << "start nnf" << endl;
+//   formula = formula->negatedNormalForm();
+//   // correct = correct->negatedNormalForm();
 
-  // cout << (*formula == *correct) << endl;
+//   // cout << (*formula == *correct) << endl;
 
-#if DEBUG_TIME
-  auto nnf = chrono::steady_clock::now();
-#endif
-#if DEBUG_PROGRESS
-  cout << "Negated normal form: " << formula->toString() << endl;
-#endif
+// #if DEBUG_TIME
+//   auto nnf = chrono::steady_clock::now();
+// #endif
+// #if DEBUG_PROGRESS
+//   cout << "Negated normal form: " << formula->toString() << endl;
+// #endif
 
-  auto nnf = chrono::steady_clock::now();
-  if (args.verbose) {
-    cout << "Negated normal form: " << formula->toString() << endl;
-  }
-  // cout << "start simplify" << endl;
-  formula = formula->simplify();
-  // correct = correct->simplify();
+//   auto nnf = chrono::steady_clock::now();
+//   if (args.verbose) {
+//     cout << "Negated normal form: " << formula->toString() << endl;
+//   }
+//   // cout << "start simplify" << endl;
+//   formula = formula->simplify();
+//   // correct = correct->simplify();
 
-  // cout << (*formula == *correct) << endl;
+//   // cout << (*formula == *correct) << endl;
 
-#if DEBUG_TIME
-  auto simplify = chrono::steady_clock::now();
-#endif
-#if DEBUG_PROGRESS
-  cout << "Simplified: " << formula->toString() << endl;
-#endif
+// #if DEBUG_TIME
+//   auto simplify = chrono::steady_clock::now();
+// #endif
+// #if DEBUG_PROGRESS
+//   cout << "Simplified: " << formula->toString() << endl;
+// #endif
 
-  auto simplify = chrono::steady_clock::now();
-  if (args.verbose) {
-    cout << "Simplified: " << formula->toString() << endl;
-  }
-  // cout << "start modalflatten" << endl;
-  formula = formula->modalFlatten();
-  // correct = correct->modalFlatten();
+//   auto simplify = chrono::steady_clock::now();
+//   if (args.verbose) {
+//     cout << "Simplified: " << formula->toString() << endl;
+//   }
+//   // cout << "start modalflatten" << endl;
+//   formula = formula->modalFlatten();
+//   // correct = correct->modalFlatten();
 
-  // cout << (*formula == *correct) << endl;
+//   // cout << (*formula == *correct) << endl;
 
-#if DEBUG_TIME
-  auto flatten = chrono::steady_clock::now();
-#endif
-#if DEBUG_PROGRESS
-  cout << "Flattenned: " << formula->toString() << endl;
-#endif
+// #if DEBUG_TIME
+//   auto flatten = chrono::steady_clock::now();
+// #endif
+// #if DEBUG_PROGRESS
+//   cout << "Flattenned: " << formula->toString() << endl;
+// #endif
 
-  auto flatten = chrono::steady_clock::now();
-  if (args.verbose) {
-    cout << "Flattenned: " << formula->toString() << endl;
-  }
-  // cout << "start maketrie" << endl;
-  shared_ptr<Trieform> trie = TrieformFactory::makeTrie(formula, args.settings);
-  // shared_ptr<Trieform> otherTrie =
-  //     TrieformFactory::makeTrie(correct, args.settings);
-  if (args.verbose) {
-    cout << "Constructed trie" << endl;
-    cout << "Initial trie:" << endl << trie->toString() << endl;
-    cout << "Normal cache:" << endl << trie->getCache().toString() << endl;
-  }
-  auto construct = chrono::steady_clock::now();
-#if DEBUG_PROGRESS
-  cout << "Constructed trie" << endl;
-#endif
-#if DEBUG_INITIAL_TRIE
-  cout << "Initial trie:" << endl << trie->toString() << endl;
-#endif
-#if DEBUG_NORMAL_CACHE
-  cout << "Normal cache:" << endl << trie->getCache().toString() << endl;
-#endif
-#if DEBUG_TIME
-  auto construct = chrono::steady_clock::now();
-#endif
-  // cout << "Initial trie:" << endl << trie->toString() << endl;
-  // cout << "Correct trie:" << endl << otherTrie->toString() << endl;
-  // cout << "start reduceclauses" << endl;
-  trie->reduceClauses();
-  // otherTrie->reduceClauses();
+//   auto flatten = chrono::steady_clock::now();
+//   if (args.verbose) {
+//     cout << "Flattenned: " << formula->toString() << endl;
+//   }
+//   // cout << "start maketrie" << endl;
+//   shared_ptr<Trieform> trie = TrieformFactory::makeTrie(formula, args.settings);
+//   // shared_ptr<Trieform> otherTrie =
+//   //     TrieformFactory::makeTrie(correct, args.settings);
+//   if (args.verbose) {
+//     cout << "Constructed trie" << endl;
+//     cout << "Initial trie:" << endl << trie->toString() << endl;
+//     cout << "Normal cache:" << endl << trie->getCache().toString() << endl;
+//   }
+//   auto construct = chrono::steady_clock::now();
+// #if DEBUG_PROGRESS
+//   cout << "Constructed trie" << endl;
+// #endif
+// #if DEBUG_INITIAL_TRIE
+//   cout << "Initial trie:" << endl << trie->toString() << endl;
+// #endif
+// #if DEBUG_NORMAL_CACHE
+//   cout << "Normal cache:" << endl << trie->getCache().toString() << endl;
+// #endif
+// #if DEBUG_TIME
+//   auto construct = chrono::steady_clock::now();
+// #endif
+//   // cout << "Initial trie:" << endl << trie->toString() << endl;
+//   // cout << "Correct trie:" << endl << otherTrie->toString() << endl;
+//   // cout << "start reduceclauses" << endl;
+//   trie->reduceClauses();
+//   // otherTrie->reduceClauses();
 
-#if DEBUG_TIME
-  auto reduce = chrono::steady_clock::now();
-#endif
-#if DEBUG_PROGRESS
-  cout << "Reduced trie" << endl;
-#endif
-#if DEBUG_REDUCED_TRIE
-  cout << "Reduced trie:" << endl << trie->toString() << endl;
-#endif
-#if DEBUG_REDUCED_CACHE
-  cout << "Reduced cache:" << endl << trie->getCache().toString() << endl;
-#endif
+// #if DEBUG_TIME
+//   auto reduce = chrono::steady_clock::now();
+// #endif
+// #if DEBUG_PROGRESS
+//   cout << "Reduced trie" << endl;
+// #endif
+// #if DEBUG_REDUCED_TRIE
+//   cout << "Reduced trie:" << endl << trie->toString() << endl;
+// #endif
+// #if DEBUG_REDUCED_CACHE
+//   cout << "Reduced cache:" << endl << trie->getCache().toString() << endl;
+// #endif
 
-  auto reduce = chrono::steady_clock::now();
-  if (args.verbose) {
-    cout << "Reduced trie" << endl;
-    cout << "Reduced trie:" << endl << trie->toString() << endl;
-    cout << "Reduced cache:" << endl << trie->getCache().toString() << endl;
-  }
+//   auto reduce = chrono::steady_clock::now();
+//   if (args.verbose) {
+//     cout << "Reduced trie" << endl;
+//     cout << "Reduced trie:" << endl << trie->toString() << endl;
+//     cout << "Reduced cache:" << endl << trie->getCache().toString() << endl;
+//   }
   
-  if (args.tense) {
-    trie->preprocessTense();
-  }
-  // cout << "start preprocess" << endl;
-  trie->preprocess();
-  // cout << "Processed trie:" << endl << trie->toString() << endl;
-  // otherTrie->preprocess();
+//   if (args.tense) {
+//     trie->preprocessTense();
+//   }
+//   // cout << "start preprocess" << endl;
+//   trie->preprocess();
+//   // cout << "Processed trie:" << endl << trie->toString() << endl;
+//   // otherTrie->preprocess();
 
-#if DEBUG_PROGRESS
-  cout << "Preprocessed trie" << endl;
-#endif
-#if DEBUG_PROCESSED_TRIE
-  cout << "Processed trie:" << endl << trie->toString() << endl;
-#endif
+// #if DEBUG_PROGRESS
+//   cout << "Preprocessed trie" << endl;
+// #endif
+// #if DEBUG_PROCESSED_TRIE
+//   cout << "Processed trie:" << endl << trie->toString() << endl;
+// #endif
 
-  if (args.verbose) {
-    cout << "Preprocessed trie" << endl;
-    cout << "Processed trie:" << endl << trie->toString() << endl;
-  }
-  // cout << "start removeTrueFalse" << endl;
-  trie->removeTrueAndFalse();
-  // otherTrie->removeTrueAndFalse();
-  // cout << "start preparesat" << endl;
-  trie->prepareSAT();
-  // otherTrie->prepareSAT();
+//   if (args.verbose) {
+//     cout << "Preprocessed trie" << endl;
+//     cout << "Processed trie:" << endl << trie->toString() << endl;
+//   }
+//   // cout << "start removeTrueFalse" << endl;
+//   trie->removeTrueAndFalse();
+//   // otherTrie->removeTrueAndFalse();
+//   // cout << "start preparesat" << endl;
+//   trie->prepareSAT();
+//   // otherTrie->prepareSAT();
 
-#if DEBUG_TIME
-  auto prepare = chrono::steady_clock::now();
-#endif
-#if DEBUG_PROGRESS
-  cout << "Prepared SAT" << endl;
-#endif
+// #if DEBUG_TIME
+//   auto prepare = chrono::steady_clock::now();
+// #endif
+// #if DEBUG_PROGRESS
+//   cout << "Prepared SAT" << endl;
+// #endif
 
-  auto prepare = chrono::steady_clock::now();
-  if (args.verbose) {
-    cout << "Prepared SAT" << endl;
-  }
+//   auto prepare = chrono::steady_clock::now();
+//   if (args.verbose) {
+//     cout << "Prepared SAT" << endl;
+//   }
 
 
-  // cout << "start issatisfiable" << endl;
-  bool satisfiable = trie->isSatisfiable();
-  if (args.valid) {
-    cout << (satisfiable ? "Invalid" : "Valid") << endl;
-  } else {
-    cout << (satisfiable ? "Satisfiable" : "Unsatisfiable") << endl;
-  }
-  // satisfiable = otherTrie->isSatisfiable();
-  // if (args.valid) {
-  //   cout << (satisfiable ? "Invalid" : "Valid") << endl;
-  // } else {
-  //   cout << (satisfiable ? "Satisfiable" : "Unsatisfiable") << endl;
-  // }
+//   // cout << "start issatisfiable" << endl;
+//   bool satisfiable = trie->isSatisfiable();
+//   if (args.valid) {
+//     cout << (satisfiable ? "Invalid" : "Valid") << endl;
+//   } else {
+//     cout << (satisfiable ? "Satisfiable" : "Unsatisfiable") << endl;
+//   }
+//   // satisfiable = otherTrie->isSatisfiable();
+//   // if (args.valid) {
+//   //   cout << (satisfiable ? "Invalid" : "Valid") << endl;
+//   // } else {
+//   //   cout << (satisfiable ? "Satisfiable" : "Unsatisfiable") << endl;
+//   // }
 
-#if DEBUG_TIME
-  auto solve = chrono::steady_clock::now();
-#endif
-#if DEBUG_PROGESS
-  cout << "Solved" << endl;
-#endif
+// #if DEBUG_TIME
+//   auto solve = chrono::steady_clock::now();
+// #endif
+// #if DEBUG_PROGESS
+//   cout << "Solved" << endl;
+// #endif
 
-#if DEBUG_TIME
-  auto readTime = read - start;
-  auto parseTime = parse - start;
-  auto nnfTime = nnf - start;
-  auto simplifyTime = simplify - start;
-  auto flattenTime = flatten - start;
-  auto constructTime = construct - start;
-  auto reduceTime = reduce - start;
-  auto prepareTime = prepare - start;
-  auto solveTime = solve - start;
-  cout << "READ TIME: " << chrono::duration<double, milli>(readTime).count()
-       << " ms" << endl;
-  cout << "PARSE TIME: " << chrono::duration<double, milli>(parseTime).count()
-       << " ms" << endl;
-  cout << "NNF TIME: " << chrono::duration<double, milli>(nnfTime).count()
-       << " ms" << endl;
-  cout << "SIMPLIFY TIME: "
-       << chrono::duration<double, milli>(simplifyTime).count() << " ms"
-       << endl;
-  cout << "FLATTEN TIME: "
-       << chrono::duration<double, milli>(flattenTime).count() << " ms" << endl;
-  cout << "CONSTRUCT TIME: "
-       << chrono::duration<double, milli>(constructTime).count() << " ms"
-       << endl;
-  cout << "REDUCE TIME: " << chrono::duration<double, milli>(reduceTime).count()
-       << " ms" << endl;
-  cout << "PREPARE TIME: "
-       << chrono::duration<double, milli>(prepareTime).count() << " ms" << endl;
-  cout << "SOLVE TIME: " << chrono::duration<double, milli>(solveTime).count()
-       << " ms" << endl;
-#endif
+// #if DEBUG_TIME
+//   auto readTime = read - start;
+//   auto parseTime = parse - start;
+//   auto nnfTime = nnf - start;
+//   auto simplifyTime = simplify - start;
+//   auto flattenTime = flatten - start;
+//   auto constructTime = construct - start;
+//   auto reduceTime = reduce - start;
+//   auto prepareTime = prepare - start;
+//   auto solveTime = solve - start;
+//   cout << "READ TIME: " << chrono::duration<double, milli>(readTime).count()
+//        << " ms" << endl;
+//   cout << "PARSE TIME: " << chrono::duration<double, milli>(parseTime).count()
+//        << " ms" << endl;
+//   cout << "NNF TIME: " << chrono::duration<double, milli>(nnfTime).count()
+//        << " ms" << endl;
+//   cout << "SIMPLIFY TIME: "
+//        << chrono::duration<double, milli>(simplifyTime).count() << " ms"
+//        << endl;
+//   cout << "FLATTEN TIME: "
+//        << chrono::duration<double, milli>(flattenTime).count() << " ms" << endl;
+//   cout << "CONSTRUCT TIME: "
+//        << chrono::duration<double, milli>(constructTime).count() << " ms"
+//        << endl;
+//   cout << "REDUCE TIME: " << chrono::duration<double, milli>(reduceTime).count()
+//        << " ms" << endl;
+//   cout << "PREPARE TIME: "
+//        << chrono::duration<double, milli>(prepareTime).count() << " ms" << endl;
+//   cout << "SOLVE TIME: " << chrono::duration<double, milli>(solveTime).count()
+//        << " ms" << endl;
+// #endif
 
-  if (args.verbose) {
-    auto solve = chrono::steady_clock::now();
-    cout << "Solved" << endl;
+//   if (args.verbose) {
+//     auto solve = chrono::steady_clock::now();
+//     cout << "Solved" << endl;
 
-    auto readTime = read - start;
-    auto parseTime = parse - start;
-    auto nnfTime = nnf - start;
-    auto simplifyTime = simplify - start;
-    auto flattenTime = flatten - start;
-    auto constructTime = construct - start;
-    auto reduceTime = reduce - start;
-    auto prepareTime = prepare - start;
-    auto solveTime = solve - start;
-    cout << "READ TIME: " << chrono::duration<double, milli>(readTime).count()
-         << " ms" << endl;
-    cout << "PARSE TIME: " << chrono::duration<double, milli>(parseTime).count()
-         << " ms" << endl;
-    cout << "NNF TIME: " << chrono::duration<double, milli>(nnfTime).count()
-         << " ms" << endl;
-    cout << "SIMPLIFY TIME: "
-         << chrono::duration<double, milli>(simplifyTime).count() << " ms"
-         << endl;
-    cout << "FLATTEN TIME: "
-         << chrono::duration<double, milli>(flattenTime).count() << " ms"
-         << endl;
-    cout << "CONSTRUCT TIME: "
-         << chrono::duration<double, milli>(constructTime).count() << " ms"
-         << endl;
-    cout << "REDUCE TIME: "
-         << chrono::duration<double, milli>(reduceTime).count() << " ms"
-         << endl;
-    cout << "PREPARE TIME: "
-         << chrono::duration<double, milli>(prepareTime).count() << " ms"
-         << endl;
-    cout << "SOLVE TIME: " << chrono::duration<double, milli>(solveTime).count()
-         << " ms" << endl;
-  }
-}
+//     auto readTime = read - start;
+//     auto parseTime = parse - start;
+//     auto nnfTime = nnf - start;
+//     auto simplifyTime = simplify - start;
+//     auto flattenTime = flatten - start;
+//     auto constructTime = construct - start;
+//     auto reduceTime = reduce - start;
+//     auto prepareTime = prepare - start;
+//     auto solveTime = solve - start;
+//     cout << "READ TIME: " << chrono::duration<double, milli>(readTime).count()
+//          << " ms" << endl;
+//     cout << "PARSE TIME: " << chrono::duration<double, milli>(parseTime).count()
+//          << " ms" << endl;
+//     cout << "NNF TIME: " << chrono::duration<double, milli>(nnfTime).count()
+//          << " ms" << endl;
+//     cout << "SIMPLIFY TIME: "
+//          << chrono::duration<double, milli>(simplifyTime).count() << " ms"
+//          << endl;
+//     cout << "FLATTEN TIME: "
+//          << chrono::duration<double, milli>(flattenTime).count() << " ms"
+//          << endl;
+//     cout << "CONSTRUCT TIME: "
+//          << chrono::duration<double, milli>(constructTime).count() << " ms"
+//          << endl;
+//     cout << "REDUCE TIME: "
+//          << chrono::duration<double, milli>(reduceTime).count() << " ms"
+//          << endl;
+//     cout << "PREPARE TIME: "
+//          << chrono::duration<double, milli>(prepareTime).count() << " ms"
+//          << endl;
+//     cout << "SOLVE TIME: " << chrono::duration<double, milli>(solveTime).count()
+//          << " ms" << endl;
+//   }
+// }
