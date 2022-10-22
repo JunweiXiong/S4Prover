@@ -6,11 +6,9 @@
 
 using namespace std;
 
-class atomGenerator{
-    int a = 0;
+class AtomGenerator{
 
 public:
-    int c = 0;
 
     shared_ptr<Formula> static generate();
 
