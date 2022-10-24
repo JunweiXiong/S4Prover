@@ -134,18 +134,6 @@ shared_ptr<Formula> Or::modalFlatten() {
 
 
 shared_ptr<Formula> Or::s4reduction(){
-  formula_set newOrSet;
-
-  shared_ptr<Formula> first = *orSet_.begin();
-  orSet_.erase(first);
-
-  shared_ptr<Formula> second = Or::create(orSet_,true)->s4reduction();
-
-  newOrSet.insert(first);
-  newOrSet.insert(second);
-
-  orSet_ = newOrSet;
-
   return shared_from_this();
 }
 

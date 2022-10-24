@@ -110,11 +110,6 @@ void solve(arguments_struct &args) {
     cout << "Parsed: " << formula->toString() << endl;
   }
 
-  formula = formula->s4reduction();
-  if (args.verbose) {
-  cout << "S4 reduction: " << formula->toString() << endl;
-
-  }
   Sequent sequent(formula_set(),formula_set({formula}));
   vector<Sequent> normalSquents = sequent.normalReduction();
   if (args.verbose) {

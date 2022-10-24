@@ -81,15 +81,12 @@ shared_ptr<Formula> Diamond::modalFlatten() {
 
 shared_ptr<Formula> Diamond::s4reduction(){
   power_ = 1;
-  subformula_ = subformula_->s4reduction();
 
   switch (subformula_->getType()) {
 
   case FDiamond: {
     Diamond *diamondFormula = dynamic_cast<Diamond *>(subformula_.get());
-    if (diamondFormula->getModality() == modality_) {
-      subformula_ = diamondFormula->getSubformula();
-    }
+    subformula_ = diamondFormula->getSubformula();
     return shared_from_this();
   }
   case FOr: {
@@ -105,7 +102,7 @@ shared_ptr<Formula> Diamond::s4reduction(){
 
     shared_ptr<Formula> newOrFormula = Or::create(newOrSet,true);
     
-    return newOrFormula->s4reduction();
+    return newOrFormula;
   }
 
   default:

@@ -80,15 +80,12 @@ shared_ptr<Formula> Box::modalFlatten() {
 
 shared_ptr<Formula> Box::s4reduction(){
   power_ = 1;
-  subformula_ = subformula_->s4reduction();
 
   switch (subformula_->getType()) {
 
   case FBox: {
     Box *boxFormula = dynamic_cast<Box *>(subformula_.get());
-    if (boxFormula->getModality() == modality_) {
-      subformula_ = boxFormula->getSubformula();
-    }
+    subformula_ = boxFormula->getSubformula(); 
     return shared_from_this();
   }
   case FAnd: {
@@ -104,7 +101,7 @@ shared_ptr<Formula> Box::s4reduction(){
 
     shared_ptr<Formula> newAndFormula = And::create(newAndSet,true);
     
-    return newAndFormula->s4reduction();
+    return newAndFormula;
   }
 
   default:

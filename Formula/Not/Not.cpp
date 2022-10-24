@@ -27,46 +27,35 @@ shared_ptr<Formula> Not::modalFlatten() {
 }
 
 shared_ptr<Formula> Not::s4reduction() {
-  subformula_ = subformula_->s4reduction();
   switch (subformula_->getType()) {
 
   case FDiamond: {
     Diamond *diamondFormula = dynamic_cast<Diamond *>(subformula_.get());
-    
     shared_ptr<Formula> boxFormula = Box::create(Not::create(diamondFormula->getSubformula()));
-
-    return boxFormula->s4reduction();
+    return boxFormula;
   }
   case FOr: {
     Or *orFormula = dynamic_cast<Or *>(subformula_.get());
-
     formula_set orFormulas = orFormula->getSubformulas();
-
     formula_set newAndSet(orFormulas.size());
     for (shared_ptr<Formula> formula : orFormulas){
-      shared_ptr<Formula> notformula = Not::create(formula);
-      newAndSet.insert(notformula);
+      newAndSet.insert(Not::create(formula));
     }
-
     shared_ptr<Formula> newAndFormula = And::create(newAndSet,true);
-    
-    return newAndFormula->s4reduction();
+    return newAndFormula;
   }
 
   case FAnd: {
     And *andFormula = dynamic_cast<And *>(subformula_.get());
-
     formula_set andFormulas = andFormula->getSubformulas();
-
     formula_set newOrSet(andFormulas.size());
     for (shared_ptr<Formula> formula : andFormulas){
-      shared_ptr<Formula> notformula = Not::create(formula);
-      newOrSet.insert(notformula);
+      newOrSet.insert(Not::create(formula));
     }
 
     shared_ptr<Formula> newOrFormula = Or::create(newOrSet,true);
     
-    return newOrFormula->s4reduction();
+    return newOrFormula;
   }
 
   case FNot: {
