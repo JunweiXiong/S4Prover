@@ -25,6 +25,7 @@ public:
   shared_ptr<Formula> modalFlatten();
   shared_ptr<Formula> s4reduction();
   bool isClassical() {return true;};
+  // void toBinary() {};
 
   shared_ptr<Formula> clone() const;
 

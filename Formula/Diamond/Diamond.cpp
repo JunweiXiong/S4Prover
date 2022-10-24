@@ -99,11 +99,11 @@ shared_ptr<Formula> Diamond::s4reduction(){
 
     formula_set newOrSet(orFormulas.size());
     for (shared_ptr<Formula> formula : orFormulas){
-      shared_ptr<Formula> diamondformula = Diamond::create(modality_, power_, formula);
+      shared_ptr<Formula> diamondformula = Diamond::create(formula);
       newOrSet.insert(diamondformula);
     }
 
-    shared_ptr<Formula> newOrFormula = Or::create(newOrSet);
+    shared_ptr<Formula> newOrFormula = Or::create(newOrSet,true);
     
     return newOrFormula->s4reduction();
   }

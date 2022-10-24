@@ -21,7 +21,7 @@ private:
   formula_set andSet_;
 
 public:
-  And(const formula_set &andSet);
+  And(const formula_set &andSet, bool binary = false);
   ~And();
 
   formula_set getSubformulas() const;
@@ -42,7 +42,7 @@ public:
 
   shared_ptr<Formula> clone() const;
 
-  static shared_ptr<Formula> create(formula_set andList);
+  static shared_ptr<Formula> create(formula_set andList, bool binary = false);
 
   bool operator==(const Formula &other) const;
   bool operator!=(const Formula &other) const;

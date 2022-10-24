@@ -1,14 +1,16 @@
 #include "And.h"
 
-And::And(const formula_set &andSet) {
+And::And(const formula_set &andSet, bool binary) {
   andSet_ = andSet;
-  for (shared_ptr<Formula> formula : andSet) {
-    And *andFormula = dynamic_cast<And *>(formula.get());
-    if (andFormula) {
-      const formula_set *subformulas = andFormula->getSubformulasReference();
-      andSet_.insert(subformulas->begin(), subformulas->end());
-    } else {
-      andSet_.insert(formula);
+  if (!binary){
+    for (shared_ptr<Formula> formula : andSet) {
+      And *andFormula = dynamic_cast<And *>(formula.get());
+      if (andFormula) {
+        const formula_set *subformulas = andFormula->getSubformulasReference();
+        andSet_.insert(subformulas->begin(), subformulas->end());
+      } else {
+        andSet_.insert(formula);
+      }
     }
   }
 }
@@ -136,11 +138,15 @@ shared_ptr<Formula> And::modalFlatten() {
 }
 
 shared_ptr<Formula> And::s4reduction(){
-  formula_set newAndSet(andSet_.size());
-  
-  for (shared_ptr<Formula> formula : andSet_) {
-    newAndSet.insert(formula->s4reduction());
-  }
+  formula_set newAndSet;
+
+  shared_ptr<Formula> first = *andSet_.begin();
+  andSet_.erase(first);
+
+  shared_ptr<Formula> second = And::create(andSet_,true)->s4reduction();
+
+  newAndSet.insert(first);
+  newAndSet.insert(second);
   
   andSet_ = newAndSet;
   return shared_from_this();
@@ -155,7 +161,7 @@ bool And::isClassical(){
   return true;
 }
 
-shared_ptr<Formula> And::create(formula_set andSet) {
+shared_ptr<Formula> And::create(formula_set andSet, bool binary) {
   shared_ptr<Formula> falseFormula = False::create();
   if (andSet.count(falseFormula)) {
     return falseFormula;
@@ -165,7 +171,12 @@ shared_ptr<Formula> And::create(formula_set andSet) {
   andSet.erase(trueFormula);
 
   if (andSet.size() > 1) {
-    return shared_ptr<Formula>(new And(andSet));
+    if(binary){
+      return shared_ptr<Formula>(new And(andSet,binary));
+    }else{
+      return shared_ptr<Formula>(new And(andSet));
+    }
+    
   } else if (andSet.size() == 1) {
     return *andSet.begin();
   } else {

@@ -192,8 +192,8 @@ Sequent Sequent::copy(){
                 shared_ptr<Formula> p = AtomGenerator::generate();
                 formula_set set1({Not::create(p),boxOrSubLeft});
                 formula_set set2({p,boxOrSubRight});
-                left_.insert(Box::create(Or::create(set1)));
-                left_.insert(Box::create(Or::create(set2)));
+                left_.insert(Box::create(Or::create(set1,true)));
+                left_.insert(Box::create(Or::create(set2,true)));
               }else{
                 shared_ptr<Formula> boxOrSubClassic;
                 shared_ptr<Formula> boxOrSubNonClassic;
@@ -217,9 +217,9 @@ Sequent Sequent::copy(){
                       boxOrAndRight = *boxOrAndSubFormulas.begin();
                   }
                   shared_ptr<Formula> p = AtomGenerator::generate();
-                  boxL_.insert(Box::create(Or::create(formula_set({boxOrSubClassic,Not::create(p)}))));
-                  left_.insert(Box::create(Or::create(formula_set({boxOrAndLeft,p}))));
-                  left_.insert(Box::create(Or::create(formula_set({boxOrAndRight,p}))));
+                  boxL_.insert(Box::create(Or::create(formula_set({boxOrSubClassic,Not::create(p)}),true)));
+                  left_.insert(Box::create(Or::create(formula_set({boxOrAndLeft,p}),true)));
+                  left_.insert(Box::create(Or::create(formula_set({boxOrAndRight,p}),true)));
                 }else if (boxOrSubType==FOr){
                   Or *boxOrOrFormula = dynamic_cast<Or *>(boxOrSubNonClassic.get());
                   formula_set boxOrOrSubFormulas = boxOrOrFormula->getSubformulas();
@@ -228,13 +228,13 @@ Sequent Sequent::copy(){
                   shared_ptr<Formula> boxOrOrRight;
                   if (boxOrOrSubFormulas.size()>1){
                     cout << "unexpected or size " << endl;
-                    boxOrOrRight = Or::create(boxOrOrSubFormulas);
+                    boxOrOrRight = Or::create(boxOrOrSubFormulas,true);
                   }else{
                       boxOrOrRight = *boxOrOrSubFormulas.begin();
                   }
                   shared_ptr<Formula> p = AtomGenerator::generate();
-                  left_.insert(Box::create(Or::create(formula_set({Not::create(p),boxOrOrLeft}))));
-                  left_.insert(Box::create(Or::create({boxOrOrRight,Or::create({p,boxOrSubClassic})})));
+                  left_.insert(Box::create(Or::create(formula_set({Not::create(p),boxOrOrLeft}),true)));
+                  left_.insert(Box::create(Or::create({boxOrOrRight,Or::create({p,boxOrSubClassic},true)},true)));
 
                 }else if (boxOrSubType==FNot){
                   Not *boxOrNotFormula = dynamic_cast<Not *>(boxOrSubNonClassic.get());
@@ -243,8 +243,8 @@ Sequent Sequent::copy(){
                     Box *boxOrNotBoxFormula = dynamic_cast<Box *>(boxOrNotSubFormula.get());
                     shared_ptr<Formula> p = AtomGenerator::generate();
                     shared_ptr<Formula> f = boxOrNotBoxFormula->getSubformula();
-                    left_.insert(Box::create(Or::create(formula_set({p,Not::create(f)}))));
-                    boxLdia_.insert(Box::create(Or::create(formula_set({boxOrSubClassic,Diamond::create(Not::create(p))}))));
+                    left_.insert(Box::create(Or::create(formula_set({p,Not::create(f)}),true)));
+                    boxLdia_.insert(Box::create(Or::create(formula_set({boxOrSubClassic,Diamond::create(Not::create(p))}),true)));
                   }else{
                     cout << "unexpected boxOrNotSubFormula : "<< firstLeft->toString() << endl;
                   }
@@ -252,14 +252,14 @@ Sequent Sequent::copy(){
                   Box *boxOrBoxFormula = dynamic_cast<Box *>(boxOrSubNonClassic.get());
                   shared_ptr<Formula> f = boxOrBoxFormula->getSubformula();
                   shared_ptr<Formula> p = AtomGenerator::generate();
-                  boxLbox_.insert(Box::create(Or::create(formula_set({boxOrSubClassic,Box::create(p)}))));
-                  left_.insert(Box::create(Or::create(formula_set({Not::create(p),boxOrSubNonClassic}))));
+                  boxLbox_.insert(Box::create(Or::create(formula_set({boxOrSubClassic,Box::create(p)}),true)));
+                  left_.insert(Box::create(Or::create(formula_set({Not::create(p),boxOrSubNonClassic}),true)));
                 }else if (boxOrSubType==FDiamond){
                   Diamond *boxOrDiaFormula = dynamic_cast<Diamond *>(boxOrSubNonClassic.get());
                   shared_ptr<Formula> f = boxOrDiaFormula->getSubformula();
                   shared_ptr<Formula> p = AtomGenerator::generate();
-                  boxLdia_.insert(Box::create(Or::create(formula_set({boxOrSubClassic,Diamond::create(p)}))));
-                  left_.insert(Box::create(Or::create(formula_set({Not::create(p),boxOrSubNonClassic}))));
+                  boxLdia_.insert(Box::create(Or::create(formula_set({boxOrSubClassic,Diamond::create(p)}),true)));
+                  left_.insert(Box::create(Or::create(formula_set({Not::create(p),boxOrSubNonClassic}),true)));
                 }else{
                   cout << "unexpected boxOrSubType " << firstLeft->toString() << endl;
                 }
@@ -277,7 +277,7 @@ Sequent Sequent::copy(){
               shared_ptr<Formula> p = AtomGenerator::generate();
               shared_ptr<Formula> a = boxNotBoxFormula->getSubformula();
               formula_set orSet({Not::create(p),Not::create(a)});
-              formula1 = Box::create(Or::create(orSet));
+              formula1 = Box::create(Or::create(orSet,true));
               formula2 = Box::create(Diamond::create(p));
               left_.insert(formula1);
               boxdiaL_.insert(formula2);
@@ -293,7 +293,7 @@ Sequent Sequent::copy(){
             }else{
               shared_ptr<Formula> p = AtomGenerator::generate();
               formula_set orSet({Not::create(p),a});
-              left_.insert(Box::create(Or::create(orSet)));
+              left_.insert(Box::create(Or::create(orSet,true)));
               boxdiaL_.insert(Box::create(Diamond::create(p)));
             }
           }else{
@@ -347,7 +347,7 @@ Sequent Sequent::copy(){
                 if (boxOrFormula->getSubformulas().size()==2){
                   for (shared_ptr<Formula> f : boxOrFormula->getSubformulas()){
                   formula_set orSet({p,Not::create(f)});
-                  left_.insert(Box::create(Or::create(orSet)));
+                  left_.insert(Box::create(Or::create(orSet,true)));
                   boxR_.insert(Box::create(p));
                   }
                 }else{
@@ -358,7 +358,7 @@ Sequent Sequent::copy(){
                 shared_ptr<Formula> f = boxNotFormula->getSubformula();
                 shared_ptr<Formula> p = AtomGenerator::generate();
                 formula_set orSet({p,Not::create(f)});
-                left_.insert(Box::create(Or::create(orSet)));
+                left_.insert(Box::create(Or::create(orSet,true)));
                 boxR_.insert(Box::create(p));
 
               }else if (boxSubtype == FDiamond){
@@ -366,7 +366,7 @@ Sequent Sequent::copy(){
                 shared_ptr<Formula> p = AtomGenerator::generate();
                 shared_ptr<Formula> f = boxDiaFormula->getSubformula();
                 formula_set orSet({p,Box::create(Not::create(f))});
-                left_.insert(Box::create(Or::create(orSet)));
+                left_.insert(Box::create(Or::create(orSet,true)));
                 boxR_.insert(Box::create(f));
 
               }else{

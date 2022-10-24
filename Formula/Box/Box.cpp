@@ -98,11 +98,11 @@ shared_ptr<Formula> Box::s4reduction(){
 
     formula_set newAndSet(andFormulas.size());
     for (shared_ptr<Formula> formula : andFormulas){
-      shared_ptr<Formula> boxformula = Box::create(modality_, power_, formula);
+      shared_ptr<Formula> boxformula = Box::create(formula);
       newAndSet.insert(boxformula);
     }
 
-    shared_ptr<Formula> newAndFormula = And::create(newAndSet);
+    shared_ptr<Formula> newAndFormula = And::create(newAndSet,true);
     
     return newAndFormula->s4reduction();
   }

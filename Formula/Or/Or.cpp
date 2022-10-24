@@ -1,15 +1,11 @@
 #include "Or.h"
 
-Or::Or(const formula_set &orSet) {
-  for (shared_ptr<Formula> formula : orSet) {
-    Or *orFormula = dynamic_cast<Or *>(formula.get());
-    if (orFormula) {
-      const formula_set *subformulas = orFormula->getSubformulasReference();
-      orSet_.insert(subformulas->begin(), subformulas->end());
-    } else {
-      orSet_.insert(formula);
-    }
+Or::Or(const formula_set &orSet, bool binary) {
+  orSet_ = orSet;
+  if(!binary){
+    Or::flatten();
   }
+  
 }
 Or::~Or() {
 #if DEBUG_DESTRUCT
@@ -138,13 +134,18 @@ shared_ptr<Formula> Or::modalFlatten() {
 
 
 shared_ptr<Formula> Or::s4reduction(){
-  formula_set newOrSet(orSet_.size());
-  
-  for (shared_ptr<Formula> formula : orSet_) {
-    newOrSet.insert(formula->s4reduction());
-  }
-  
+  formula_set newOrSet;
+
+  shared_ptr<Formula> first = *orSet_.begin();
+  orSet_.erase(first);
+
+  shared_ptr<Formula> second = Or::create(orSet_,true)->s4reduction();
+
+  newOrSet.insert(first);
+  newOrSet.insert(second);
+
   orSet_ = newOrSet;
+
   return shared_from_this();
 }
 
@@ -157,7 +158,24 @@ bool Or::isClassical(){
   return true;
 }
 
-shared_ptr<Formula> Or::create(formula_set orSet) {
+void Or::flatten(){
+  formula_set newOrSet;
+  for (shared_ptr<Formula> formula : orSet_) {
+    Or *orFormula = dynamic_cast<Or *>(formula.get());
+    if (orFormula) {
+      const formula_set *subformulas = orFormula->getSubformulasReference();
+      newOrSet.insert(subformulas->begin(), subformulas->end());
+    } else {
+      newOrSet.insert(formula);   
+    } 
+  }
+  orSet_ = newOrSet;
+}
+
+
+
+shared_ptr<Formula> Or::create(formula_set orSet, bool binary) {
+
   shared_ptr<Formula> trueFormula = True::create();
   if (orSet.count(trueFormula)) {
     return trueFormula;
@@ -167,7 +185,11 @@ shared_ptr<Formula> Or::create(formula_set orSet) {
   orSet.erase(falseFormula);
 
   if (orSet.size() > 1) {
-    return shared_ptr<Formula>(new Or(orSet));
+    if (binary){
+      return shared_ptr<Formula>(new Or(orSet, binary));
+    }else{
+      return shared_ptr<Formula>(new Or(orSet));
+    }
   } else if (orSet.size() == 1) {
     return *orSet.begin();
   } else {

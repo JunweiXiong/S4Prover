@@ -33,7 +33,7 @@ shared_ptr<Formula> Not::s4reduction() {
   case FDiamond: {
     Diamond *diamondFormula = dynamic_cast<Diamond *>(subformula_.get());
     
-    shared_ptr<Formula> boxFormula = Box::create(diamondFormula->getModality(), 1, Not::create(diamondFormula->getSubformula()));
+    shared_ptr<Formula> boxFormula = Box::create(Not::create(diamondFormula->getSubformula()));
 
     return boxFormula->s4reduction();
   }
@@ -48,7 +48,7 @@ shared_ptr<Formula> Not::s4reduction() {
       newAndSet.insert(notformula);
     }
 
-    shared_ptr<Formula> newAndFormula = And::create(newAndSet);
+    shared_ptr<Formula> newAndFormula = And::create(newAndSet,true);
     
     return newAndFormula->s4reduction();
   }
@@ -64,7 +64,7 @@ shared_ptr<Formula> Not::s4reduction() {
       newOrSet.insert(notformula);
     }
 
-    shared_ptr<Formula> newOrFormula = Or::create(newOrSet);
+    shared_ptr<Formula> newOrFormula = Or::create(newOrSet,true);
     
     return newOrFormula->s4reduction();
   }

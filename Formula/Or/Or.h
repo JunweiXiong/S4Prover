@@ -20,7 +20,7 @@ private:
   formula_set orSet_;
 
 public:
-  Or(const formula_set &orSet);
+  Or(const formula_set &orSet, bool binary = false);
   ~Or();
 
   formula_set getSubformulas() const;
@@ -38,10 +38,13 @@ public:
   shared_ptr<Formula> modalFlatten();
   shared_ptr<Formula> s4reduction();
   bool isClassical();
+  void flatten();
+  // void toBinary();
+ 
 
   shared_ptr<Formula> clone() const;
 
-  static shared_ptr<Formula> create(formula_set orSet);
+  static shared_ptr<Formula> create(formula_set orSet, bool binary = false);
 
   bool operator==(const Formula &other) const;
   bool operator!=(const Formula &other) const;
