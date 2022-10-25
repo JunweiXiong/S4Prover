@@ -1,78 +1,104 @@
 #include "MinisatProver.h"
 
-MinisatProver::MinisatProver() {
-  // solver->random_var_freq = 0;
-  // solver->rnd_init_act = true;
-  // solver->ccmin_mode = 1;
-  // solver->clause_decay = 0;
-  // solver->var_decay = 0.5;
-  // solver->luby_restart = false;
-  // solver->
+MinisatProver::MinisatProver(shared_ptr<Formula> formula) {
   solver->eliminate(true);
+  prepareSAT(formula);
 }
 MinisatProver::~MinisatProver() {}
 
-modal_names_map MinisatProver::prepareSAT(FormulaTriple clauses,
-                                          name_set extra) {
-  prepareExtras(extra);
+void MinisatProver::prepareSAT(shared_ptr<Formula> formula) {
 
-  modal_names_map newExtra;
-  prepareModalClauses(clauses.getBoxClauses(), newExtra, boxLits, boxFromRight);
-  prepareModalClauses(clauses.getDiamondClauses(), newExtra, diamondLits,
-                      diamondFromRight);
+  formula = formula->negatedNormalForm()->simplify();
 
-  prepareFalse();
-  prepareClauses(clauses.getClauses());
-  return newExtra;
+  // initialize clause set
+  formula_set clauseSet;
+  if (formula->getType() == FAnd){
+    And *andFormula = dynamic_cast<And *>(formula.get());
+    clauseSet = andFormula->getSubformulas();
+  }else{
+    clauseSet.insert(formula);
+  }
+
+
+  // remove true and false
+  formula_set newClauseSet;
+  for (shared_ptr<Formula> clause : clauseSet) {
+    shared_ptr<Formula> newClause;
+    if (clause->getType() == FTrue) {
+      clause = Not::create(Atom::create("$false"));
+    } else if (clause->getType() == FFalse) {
+      clause = Atom::create("$false");
+    }
+    newClauseSet.insert(clause);
+  }
+  
+  //  get all distinct names 
+  name_set names = MinisatProver::getNames(newClauseSet);  
+  
+  prepareNames(names);
+
+  addFalse();
+
+  addClauses(newClauseSet);
+
 }
 
-void MinisatProver::prepareFalse() {
+name_set MinisatProver::getNames(formula_set clauses){
+  name_set names;
+  for (shared_ptr<Formula> clause : clauses) {
+    if (clause->getType() == FAtom) {
+      names.insert(dynamic_cast<Atom *>(clause.get())->getName());
+    }else if (clause->getType() == FNot) {
+      names.insert(dynamic_cast<Atom *>(
+                      dynamic_cast<Not *>(clause.get())->getSubformula().get())
+                      ->getName());
+    }else if (clause->getType() == FOr){
+      for (shared_ptr<Formula> subformula : dynamic_cast<Or *>(clause.get())->getSubformulas()){
+        if (subformula->getType() == FAtom) {
+          names.insert(dynamic_cast<Atom *>(subformula.get())->getName());
+        }else if (clause->getType() == FNot) {
+          names.insert(dynamic_cast<Atom *>(
+                          dynamic_cast<Not *>(subformula.get())->getSubformula().get())
+                          ->getName());
+        }else{
+          throw invalid_argument("getName(): Expected Atom or Not but got " + clause->toString());
+        }  
+      }
+    }else{
+      throw invalid_argument("Expected Atom,Not,Or but got " + clause->toString());
+    }
+  }
+  return names;
+}
+
+void MinisatProver::addFalse() {
   solver->addClause(~Minisat::mkLit(createOrGetVariable("$false")));
 }
 
-void MinisatProver::prepareExtras(name_set extra) {
-  for (string name : extra) {
+void MinisatProver::prepareNames(name_set names) {
+  for (string name : names) {
     createOrGetVariable(name);
   }
 }
 
-void MinisatProver::prepareClauses(clause_set clauses) {
-  for (Clause clause : clauses) {
-    if (clause.formula->getType() == FOr) {
+void MinisatProver::addClauses(formula_set clauses) {
+  for (shared_ptr<Formula> clause : clauses) {
+    if (clause->getType() == FOr) {
       Minisat::vec<Minisat::Lit> literals;
       for (shared_ptr<Formula> subformula :
-           dynamic_cast<Or *>(clause.formula.get())->getSubformulas()) {
+           dynamic_cast<Or *>(clause.get())->getSubformulas()) {
         literals.push(makeLiteral(subformula));
       }
       solver->addClause(literals);
     } else {
-      solver->addClause(makeLiteral(clause.formula));
+      solver->addClause(makeLiteral(clause));
     }
   }
 }
 
-void MinisatProver::prepareModalClauses(modal_clause_set modal_clauses,
-                                        modal_names_map &newExtra,
-                                        modal_lit_implication &modalLits,
-                                        modal_lit_implication &modalFromRight) {
-  for (ModalClause clause : modal_clauses) {
-    if (clause.left->getType() == FAtom) {
-      createOrGetVariable(getPrimitiveName(clause.left),
-                          Minisat::lbool((uint8_t)0));
-    } else if (clause.left->getType() == FNot) {
-      createOrGetVariable(getPrimitiveName(clause.left),
-                          Minisat::lbool((uint8_t)1));
-    }
-    newExtra[clause.modality].insert(getPrimitiveName(clause.right));
-    createModalImplication(clause.modality, toLiteral(clause.left),
-                           toLiteral(clause.right), modalLits, modalFromRight);
-  }
-}
-
-Minisat::Var MinisatProver::createOrGetVariable(string name,
-                                                Minisat::lbool polarity) {
+Minisat::Var MinisatProver::createOrGetVariable(string name) {
   if (variableMap.find(name) == variableMap.end()) {
-    variableMap[name] = solver->newVar(polarity);
+    variableMap[name] = solver->newVar();
     nameMap[variableMap[name]] = name;
   }
   return variableMap[name];
@@ -88,67 +114,13 @@ Minisat::Lit MinisatProver::makeLiteral(shared_ptr<Formula> formula) {
                       ->getName();
     return ~Minisat::mkLit(createOrGetVariable(name));
   }
-  throw invalid_argument("Expected Atom or Not but got " + formula->toString());
+  throw invalid_argument("makeLiteral(): Expected Atom or Not but got " + formula->toString());
 }
 
-shared_ptr<Minisat::vec<Minisat::Lit>>
-MinisatProver::convertAssumptions(literal_set assumptions) {
-  shared_ptr<Minisat::vec<Minisat::Lit>> literals =
-      shared_ptr<Minisat::vec<Minisat::Lit>>(new Minisat::vec<Minisat::Lit>());
-  for (Literal assumption : assumptions) {
-    Minisat::Var variable = variableMap[assumption.getName()];
-    literals->push(assumption.getPolarity() ? Minisat::mkLit(variable)
-                                            : ~Minisat::mkLit(variable));
-  }
-  return literals;
+
+
+bool MinisatProver::solve() {
+  return solver->solve();
 }
 
-bool MinisatProver::modelSatisfiesAssump(Literal assumption) {
-  if (variableMap.find(assumption.getName()) == variableMap.end()) {
-    return false;
-  }
-  int lbool =
-      Minisat::toInt(solver->modelValue(variableMap[assumption.getName()]));
-  if (lbool == 2) {
-    throw runtime_error("Model value for " + assumption.getName() +
-                        " is undefined");
-  }
-  return (lbool == 0 && assumption.getPolarity()) ||
-         (lbool == 1 && !assumption.getPolarity());
-}
 
-literal_set MinisatProver::convertConflictToAssumps(
-    Minisat::LSet &conflictLits) {
-  literal_set conflict;
-  for (int i = 0; i < conflictLits.toVec().size(); i++) {
-    conflict.insert(Literal(nameMap[Minisat::var(conflictLits.toVec()[i])],
-                            Minisat::sign(conflictLits.toVec()[i])));
-  }
-  return conflict;
-}
-
-Solution MinisatProver::solve(const literal_set &assumptions) {
-  Solution solution;
-  shared_ptr<Minisat::vec<Minisat::Lit>> vecAssumps =
-      convertAssumptions(assumptions);
-  solution.satisfiable = solver->solve(*vecAssumps);
-  if (!solution.satisfiable) {
-    solution.conflict = convertConflictToAssumps(solver->conflict);
-  }
-  return solution;
-}
-
-void MinisatProver::addClause(literal_set clause) {
-  solver->addClause(*convertAssumptions(clause));
-}
-
-void MinisatProver::printModel() {
-  for (auto varName : nameMap) {
-    cout << varName.second << " is "
-         << Minisat::toInt(solver->modelValue(varName.first)) << endl;
-  }
-}
-
-int MinisatProver::getLiteralId(Literal literal) {
-  return variableMap[literal.getName()];
-}

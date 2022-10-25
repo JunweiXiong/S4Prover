@@ -41,13 +41,105 @@ bool Sequent::isRegular(){
   }
 }
 
-bool Sequent::isCluster(){
-  if (Sequent::isRegular() && Sequent::boxdiaL_.empty() && Sequent::boxLbox_.empty() &&
-      Sequent::boxLdia_.empty() && Sequent::boxR_.empty()){
-    return true;
-  }else{
-    return false;
+void Sequent::toCluster(){
+  if (!Sequent::isNormal() || !boxLbox_.empty() || !boxLdia_.empty() || !diaL_.empty()){
+    throw invalid_argument("Cannot convert to cluster form " + Sequent::toString());
   }
+  diaL_.insert(blackdia_.begin(),blackdia_.end());
+  blackdia_.clear();
+  blackbox_.clear();
+
+  for (shared_ptr<Formula> formula : boxdiaL_){
+    if (dynamic_cast<Diamond *>((dynamic_cast<Box *>(formula.get())->getSubformula().get()))){
+      shared_ptr<Formula> boxDiaFormula = dynamic_cast<Box *>(formula.get())->getSubformula();
+      diaL_.insert(boxDiaFormula);
+    }else{
+      throw invalid_argument("boxdiaL_ error" + Sequent::toString());
+    }
+  }
+  boxdiaL_.clear();
+
+}
+
+
+// void Sequent::clearTheta(){
+//   blackbox_.clear();
+//   blackdia_.clear();
+// }
+
+// void Sequent::clearGammaSpecial(){
+//   boxL_.clear();
+//   boxdiaL_.clear();
+//   boxLbox_.clear();
+//   boxdiaL_.clear();
+// }
+// void Sequent::clearGammaClassic(){
+//   classicL_.clear();
+// }
+// void Sequent::clearDeltaSpecial(){
+//   boxR_.clear();
+// }
+// void Sequent::clearDeltaClassic(){
+//   classicR_.clear();
+// }
+
+void Sequent::addTheta(Theta t){
+  blackbox_.insert(t.blackbox.begin(),t.blackbox.end());
+  blackdia_.insert(t.blackdia.begin(),t.blackdia.end());
+}
+void Sequent::addGamma(Gamma g){
+  boxL_.insert(g.boxL.begin(),g.boxL.end());
+  boxdiaL_.insert(g.boxL.begin(),g.boxL.end());
+  boxLbox_.insert(g.boxLbox.begin(),g.boxLbox.end());
+  boxLdia_.insert(g.boxLdia.begin(),g.boxLdia.end());
+}
+
+void Sequent::addGamma_cl(formula_set formulas){
+  classicL_.insert(formulas.begin(),formulas.end());
+}
+void Sequent::addDelta(formula_set formulas){
+  boxR_.insert(formulas.begin(),formulas.end());
+}
+void Sequent::addDelta_cl(formula_set formulas){
+  classicR_.insert(formulas.begin(),formulas.end());
+}
+
+Theta Sequent::getTheta(){
+  Theta t;
+  t.blackbox = blackbox_;
+  t.blackdia = blackdia_;
+  return t;
+}
+Gamma Sequent::getGamma(){
+  Gamma g;
+  g.boxL = boxL_;
+  g.boxdiaL = boxdiaL_;
+  g.boxLbox = boxLbox_;
+  g.boxLdia = boxdiaL_;
+  return g;
+}
+
+formula_set Sequent::getGamma_box(){
+  formula_set f_set = boxL_;
+  for (shared_ptr<Formula> f : boxLbox_){
+    f_set.insert(FormulaExtraction::getBoxC(f));
+  }
+  return f_set;
+}
+
+void Sequent::clear(){
+  left_.clear();
+  right_.clear();
+  blackbox_.clear();
+  blackdia_.clear(); 
+  boxL_.clear();
+  boxdiaL_.clear();  
+  boxLbox_.clear();
+  boxLdia_.clear();  
+  diaL_.clear(); 
+  classicL_.clear();
+  boxR_.clear();
+  classicR_.clear();
 }
 
 Sequent Sequent::copy(){
@@ -216,7 +308,7 @@ Sequent Sequent::copy(){
               shared_ptr<Formula> A = boxOrBoxFormula->getSubformula();
               shared_ptr<Formula> p = AtomGenerator::generate();
               if (A->isClassical()){
-                boxLbox_.insert(firstLeft);
+                boxLbox_.insert(Box::create(Or::create({Z,boxOrNonClassic},true)));
               }else{
                 left_.insert(Box::create(Or::create({Not::create(p),A},true)));
                 left_.insert(Box::create(Or::create({Z,Box::create(p)},true)));
@@ -226,7 +318,7 @@ Sequent Sequent::copy(){
               shared_ptr<Formula> A = boxOrDiaFormula->getSubformula();
               shared_ptr<Formula> p = AtomGenerator::generate();
               if (A->isClassical()){
-                boxLdia_.insert(firstLeft);
+                boxLdia_.insert(Box::create(Or::create({Z,boxOrNonClassic},true)));
               }else{
                 left_.insert(Box::create(Or::create({Not::create(p),A},true)));
                 left_.insert(Box::create(Or::create({Z,Diamond::create(p)},true)));
