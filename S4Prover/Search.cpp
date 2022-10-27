@@ -1,7 +1,7 @@
 #include "Search.h"
 
-bool search(Sequent sequent){
-    if (!sequent.isNormal()){
+bool Search::search(Sequent sequent){
+    if (sequent.isNormal()){
         if (sequent.isRegular()){
             return Search::searchRegular(sequent);
         }else{
@@ -24,7 +24,7 @@ bool Search::searchSpecial(Sequent sequent){
     if (gamma.boxLbox.empty() && gamma.boxLdia.empty()){
         Sequent clusterSequent = sequent.copy();
         clusterSequent.toCluster();
-        return Search::searchCluster(sequent);
+        return Search::searchCluster(clusterSequent);
     }
 
     Sequent newSequent;
@@ -55,7 +55,7 @@ bool Search::searchSpecial(Sequent sequent){
         if (!Search::search(newSequent)){return false;};
 
         newSequent.clear();
-        newSequent.boxL_.insert(theta.blackbox.begin(),newSequent.blackbox_.end());
+        newSequent.boxL_.insert(theta.blackbox.begin(),theta.blackbox.end());
         newSequent.addGamma(gamma_bcbd);
         newSequent.boxL_.insert(boxD);
         if (Search::search(newSequent)){return true;};
@@ -66,7 +66,7 @@ bool Search::searchSpecial(Sequent sequent){
     newSequent.boxL_.insert(gamma_box.begin(),gamma_box.end());
     newSequent.addGamma_cl(gamma_cl);
     newSequent.addDelta_cl(delta_cl);
-    if (Search::search(newSequent)){return true;};
+    if (Search::searchCluster(newSequent)){return true;};
 
     for (shared_ptr<Formula> bg : delta){
         formula_set delta_bg = delta;
@@ -90,9 +90,9 @@ bool Search::searchSpecial(Sequent sequent){
 
     }
 
-    for (shared_ptr<Formula> bedf : gamma.boxdiaL){
+    for (shared_ptr<Formula> bedf : gamma.boxLdia){
         Gamma gamma_bedf = gamma;
-        gamma_bedf.boxdiaL.erase(bedf);
+        gamma_bedf.boxLdia.erase(bedf);
         shared_ptr<Formula> be = FormulaExtraction::getBoxE(bedf);
         shared_ptr<Formula> df = FormulaExtraction::getDiaF(bedf);
         shared_ptr<Formula> f = dynamic_cast<Diamond *>(df.get())->getSubformula();
@@ -139,7 +139,7 @@ bool Search::searchRegular(Sequent sequent){
     if (gamma.boxLbox.empty() && gamma.boxLdia.empty()){
         Sequent clusterSequent = sequent.copy();
         clusterSequent.toCluster();
-        return Search::searchCluster(sequent);
+        return Search::searchCluster(clusterSequent);
     }
 
     Sequent newSequent;
@@ -190,9 +190,9 @@ bool Search::searchRegular(Sequent sequent){
 
     }
 
-    for (shared_ptr<Formula> bedf : gamma.boxdiaL){
+    for (shared_ptr<Formula> bedf : gamma.boxLdia){
         Gamma gamma_bedf = gamma;
-        gamma_bedf.boxdiaL.erase(bedf);
+        gamma_bedf.boxLdia.erase(bedf);
         shared_ptr<Formula> be = FormulaExtraction::getBoxE(bedf);
         shared_ptr<Formula> df = FormulaExtraction::getDiaF(bedf);
         shared_ptr<Formula> f = dynamic_cast<Diamond *>(df.get())->getSubformula();
@@ -238,6 +238,7 @@ bool Search::searchCluster(Sequent sequent){
     for (shared_ptr<Formula> G : sequent.classicL_){
         Z0.insert(Not::create(G));
     }
+
     Z0.insert(sequent.classicR_.begin(),sequent.classicR_.end());
     ZSet.insert(Or::create(Z0));
 
@@ -249,8 +250,10 @@ bool Search::searchCluster(Sequent sequent){
         ZSet.insert(Or::create(Zi));
     }
 
+
     for (shared_ptr<Formula> Z : ZSet){
-        MinisatProver prover(Not::create(Z));
+        shared_ptr<Formula> not_Z = Not::create(Z);
+        MinisatProver prover(not_Z);
         bool satisfible = prover.solve();
         bool valid = !satisfible;
         if (valid){
@@ -259,3 +262,6 @@ bool Search::searchCluster(Sequent sequent){
     }
     return false;
 }
+
+
+ 

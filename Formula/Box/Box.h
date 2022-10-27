@@ -38,8 +38,10 @@ public:
   shared_ptr<Formula> simplify();
   shared_ptr<Formula> modalFlatten();
   shared_ptr<Formula> s4reduction();
+  shared_ptr<Formula> s4reductionRecursive();
+  shared_ptr<Formula> flatten(){subformula_=subformula_->flatten();return shared_from_this();};
   bool isClassical() {return false;};
-  // void toBinary() {subformula_->toBinary();};
+  
 
   shared_ptr<Formula> clone() const;
 

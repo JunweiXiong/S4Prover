@@ -20,6 +20,7 @@ shared_ptr<Formula> True::simplify() { return shared_from_this(); }
 shared_ptr<Formula> True::modalFlatten() { return shared_from_this(); }
 
 shared_ptr<Formula> True::s4reduction() {return shared_from_this();  }
+shared_ptr<Formula> True::s4reductionRecursive() {return shared_from_this();  }
 
 shared_ptr<Formula> True::create() { return shared_ptr<Formula>(new True()); }
 

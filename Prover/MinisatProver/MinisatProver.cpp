@@ -8,7 +8,7 @@ MinisatProver::~MinisatProver() {}
 
 void MinisatProver::prepareSAT(shared_ptr<Formula> formula) {
 
-  formula = formula->negatedNormalForm()->simplify();
+  formula = formula->flatten()->negatedNormalForm()->simplify();
 
   // initialize clause set
   formula_set clauseSet;
@@ -49,14 +49,18 @@ name_set MinisatProver::getNames(formula_set clauses){
     if (clause->getType() == FAtom) {
       names.insert(dynamic_cast<Atom *>(clause.get())->getName());
     }else if (clause->getType() == FNot) {
-      names.insert(dynamic_cast<Atom *>(
+      if (dynamic_cast<Not *>(clause.get())->getSubformula()->getType()==FAtom){
+        names.insert(dynamic_cast<Atom *>(
                       dynamic_cast<Not *>(clause.get())->getSubformula().get())
                       ->getName());
+      }else{
+        throw invalid_argument("getName(): Expected Not Atom but got " + clause->toString());
+      }
     }else if (clause->getType() == FOr){
       for (shared_ptr<Formula> subformula : dynamic_cast<Or *>(clause.get())->getSubformulas()){
         if (subformula->getType() == FAtom) {
           names.insert(dynamic_cast<Atom *>(subformula.get())->getName());
-        }else if (clause->getType() == FNot) {
+        }else if (subformula->getType() == FNot) {
           names.insert(dynamic_cast<Atom *>(
                           dynamic_cast<Not *>(subformula.get())->getSubformula().get())
                           ->getName());

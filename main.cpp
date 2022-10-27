@@ -10,6 +10,7 @@
 #include "Formula/True/True.h"
 #include "Formula/AtomGenerator/AtomGenerator.h"
 #include "Formula/Sequent/Sequent.h"
+#include "Formula/Sequent/NormalReduction.h"
 #include "ParseFormula/ParseFormula.h"
 #include "ParseFormulaNew/ParseFormulaNew.h"
 #include "Prover/MinisatProver/MinisatProver.h"
@@ -32,16 +33,48 @@ int main(int argc, char *argv[]){
 
   shared_ptr<Formula> formula = ParseFormula(&filename).parseFormula();
 
+  formula = Not::create(formula);
+  formula = formula->s4reductionRecursive();
+  
   Sequent sequent;
   sequent.right_.insert(formula);
-  cout << "start normal reduction" << endl;
-  vector<Sequent> normal_sequents = sequent.normalReduction();
-  cout << "finish normal reduction" << endl;
 
+  // cout << "regular sequent " << endl;
+  // cout << sequent.toString() << endl;
+
+  cout << "start reduction" << endl;
+  vector<Sequent> normal_sequents = NormalReduction::reduction(sequent);
+  cout << "end reduction" << endl;
+
+  // for (Sequent s : normal_sequents){
+  //   cout << "normal sequent " << endl;
+  //   cout << s.toString() << endl;
+  // }
+
+  cout << "normal sequent number: " << normal_sequents.size() << endl;
+
+
+  cout << "start search" << endl;
+  bool valid = true;
+  int counter = 0;
   for (Sequent s : normal_sequents){
-    cout << Search::search(s) << endl;
+    cout << s.blackbox_.size()<< " " << s.blackdia_.size() << " " << s.boxL_.size() << " " << 
+    s.boxdiaL_.size() << " " << s.boxLbox_.size() << " " << s.boxLdia_.size() <<  "  diaB " << s.diaL_.size() <<  " " <<
+    s.classicL_.size()<< " " << s.boxR_.size()<< " " << s.classicR_.size()  << endl;
+    counter++;
+    if (!Search::search(s)){
+      valid = false;
+      break;
+    }
+    cout << counter << endl;
   }
+  cout  << endl << "end search" << endl;
 
+  if (valid){
+    cout << valid << "negation valid means unsatisfible" << endl;
+  }else{
+    cout << valid << "negation refutable means satisfible" << endl;
+  }
 
 }
 

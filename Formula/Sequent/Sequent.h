@@ -14,6 +14,7 @@
 #include <memory>
 #include <string>
 #include <unordered_set>
+#include <stack>
 
 using namespace std;
 
@@ -70,7 +71,7 @@ public:
   ~Sequent();
 
   Sequent copy();
-  vector<Sequent> normalReduction();
+  // vector<Sequent> normalReduction();
   bool isNormal();
   bool isRegular();
 

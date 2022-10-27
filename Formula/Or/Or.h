@@ -37,8 +37,9 @@ public:
   shared_ptr<Formula> simplify();
   shared_ptr<Formula> modalFlatten();
   shared_ptr<Formula> s4reduction();
+  shared_ptr<Formula> s4reductionRecursive();
   bool isClassical();
-  void flatten();
+   shared_ptr<Formula> flatten();
   // void toBinary();
  
 

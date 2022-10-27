@@ -3,7 +3,15 @@
 Or::Or(const formula_set &orSet, bool binary) {
   orSet_ = orSet;
   if(!binary){
-    Or::flatten();
+    for (shared_ptr<Formula> formula : orSet) {
+    Or *orFormula = dynamic_cast<Or *>(formula.get());
+    if (orFormula) {
+      const formula_set *subformulas = orFormula->getSubformulasReference();
+      orSet_.insert(subformulas->begin(), subformulas->end());
+    } else {
+      orSet_.insert(formula);
+    }
+  }
   }
   
 }
@@ -137,6 +145,16 @@ shared_ptr<Formula> Or::s4reduction(){
   return shared_from_this();
 }
 
+shared_ptr<Formula> Or::s4reductionRecursive(){
+  formula_set newOrSet;
+  for (shared_ptr<Formula> f : orSet_){
+    f = f->s4reductionRecursive();
+    newOrSet.insert(f);
+  }
+  orSet_ = newOrSet;
+  return shared_from_this();
+}
+
 bool Or::isClassical(){
   for (shared_ptr<Formula> formula : orSet_) {
     if (!formula->isClassical()){
@@ -146,20 +164,22 @@ bool Or::isClassical(){
   return true;
 }
 
-void Or::flatten(){
+
+shared_ptr<Formula> Or::flatten() {
   formula_set newOrSet;
   for (shared_ptr<Formula> formula : orSet_) {
+    formula = formula->flatten();
     Or *orFormula = dynamic_cast<Or *>(formula.get());
     if (orFormula) {
       const formula_set *subformulas = orFormula->getSubformulasReference();
       newOrSet.insert(subformulas->begin(), subformulas->end());
     } else {
-      newOrSet.insert(formula);   
-    } 
+      newOrSet.insert(formula);
+    }
   }
   orSet_ = newOrSet;
+  return shared_from_this();
 }
-
 
 
 shared_ptr<Formula> Or::create(formula_set orSet, bool binary) {

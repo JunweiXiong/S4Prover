@@ -25,11 +25,13 @@ public:
                     if (first->getType()!=FBox){
                         return Box::create(first);
                     }else{
-                        boxOrSet.erase(formula);
+                        boxOrSet.erase(first);
                         shared_ptr<Formula> second = *boxOrSet.begin();
                         if (second->getType()!=FBox){
                             return Box::create(second);
                         }else{
+                            cout << "first: " << first->toString() << endl;
+                            cout << "second: " << second->toString() << endl;
                             throw std::invalid_argument( "getBoxC: two box: "+formula->toString());
                         }
                     }
@@ -83,7 +85,7 @@ public:
                     if (first->getType()!=FDiamond){
                         return Box::create(first);
                     }else{
-                        boxOrSet.erase(formula);
+                        boxOrSet.erase(first);
                         shared_ptr<Formula> second = *boxOrSet.begin();
                         if (second->getType()!=FDiamond){
                             return Box::create(second);
