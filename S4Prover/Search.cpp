@@ -21,7 +21,7 @@ bool Search::searchSpecial(Sequent sequent){
     formula_set delta_cl = sequent.classicR_;
     formula_set gamma_box = sequent.getGamma_box();
 
-    if (gamma.boxLbox.empty() && gamma.boxLdia.empty()){
+    if (gamma.boxLbox.empty() && gamma.boxLdia.empty() && delta.empty()){
         Sequent clusterSequent = sequent.copy();
         clusterSequent.toCluster();
         return Search::searchCluster(clusterSequent);
@@ -136,7 +136,7 @@ bool Search::searchRegular(Sequent sequent){
     formula_set delta_cl = sequent.classicR_;
     formula_set gamma_box = sequent.getGamma_box();
 
-    if (gamma.boxLbox.empty() && gamma.boxLdia.empty()){
+    if (gamma.boxLbox.empty() && gamma.boxLdia.empty() && delta.empty()){
         Sequent clusterSequent = sequent.copy();
         clusterSequent.toCluster();
         return Search::searchCluster(clusterSequent);

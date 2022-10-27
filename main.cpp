@@ -35,12 +35,14 @@ int main(int argc, char *argv[]){
 
   formula = Not::create(formula);
   formula = formula->s4reductionRecursive();
+
+  cout << formula->toString() << endl;
   
   Sequent sequent;
   sequent.right_.insert(formula);
 
-  // cout << "regular sequent " << endl;
-  // cout << sequent.toString() << endl;
+  cout << "regular sequent " << endl;
+  cout << sequent.toString() << endl;
 
   cout << "start reduction" << endl;
   vector<Sequent> normal_sequents = NormalReduction::reduction(sequent);

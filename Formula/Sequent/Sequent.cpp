@@ -42,7 +42,7 @@ bool Sequent::isRegular(){
 }
 
 void Sequent::toCluster(){
-  if (!Sequent::isNormal() || !boxLbox_.empty() || !boxLdia_.empty()){
+  if (!Sequent::isNormal() || !boxLbox_.empty() || !boxLdia_.empty() || !boxR_.empty()){
     throw invalid_argument("Cannot convert to cluster form " + Sequent::toString());
   }
   diaL_.insert(blackdia_.begin(),blackdia_.end());
