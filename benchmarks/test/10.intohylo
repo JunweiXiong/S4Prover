@@ -1,0 +1,1 @@
+((box(p v dia p) => dia(p & box p)) => (box dia p => dia box p))

@@ -1,0 +1,1 @@
+( (box p => p) & (box(box(p => box p) => p) => (dia box p => box p)) => (box(box(p => box p) => p) => (dia box p => p)) )

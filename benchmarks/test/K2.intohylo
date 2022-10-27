@@ -1,0 +1,1 @@
+dia(p v q) => (dia p v dia q)

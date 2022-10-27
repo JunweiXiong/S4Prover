@@ -1,0 +1,1 @@
+box(p & q) => (box p & box q)
