@@ -1,12 +1,11 @@
 #ifndef MINISAT_PROVER_H
 #define MINISAT_PROVER_H
 
-#include "../../Clausifier/FormulaTriple/FormulaTriple.h"
+
 #include "../../Formula/Atom/Atom.h"
 #include "../../Formula/FEnum/FEnum.h"
 #include "../../Formula/Not/Not.h"
 #include "../../Formula/Or/Or.h"
-#include "../Prover/Prover.h"
 #include "../../Defines/Defines.h"
 #include <exception>
 #include <memory>
@@ -18,7 +17,8 @@
 
 using namespace std;
 
-class MinisatProver : public Prover {
+
+class MinisatProver {
 private:
   shared_ptr<Minisat::SimpSolver> solver =
       shared_ptr<Minisat::SimpSolver>(new Minisat::SimpSolver());
@@ -26,38 +26,25 @@ private:
   unordered_map<string, Minisat::Var> variableMap;
   unordered_map<Minisat::Var, string> nameMap;
 
-  void prepareFalse();
-  void prepareExtras(name_set extra);
-  void prepareClauses(clause_set clauses);
-  void prepareModalClauses(modal_clause_set modal_clauses,
-                           modal_names_map &newExtra,
-                           modal_lit_implication &modalLits,
-                           modal_lit_implication &modalFromRight);
+  void addFalse();
+  void prepareNames(name_set names);
+  void addClauses(formula_set clauses);
 
-  Minisat::Var
-  createOrGetVariable(string name,
-                      Minisat::lbool polarity = Minisat::lbool((uint8_t)2));
+  
+  name_set getNames(formula_set clauses);
+  Minisat::Var createOrGetVariable(string name);
   Minisat::Lit makeLiteral(shared_ptr<Formula> formula);
 
-  shared_ptr<Minisat::vec<Minisat::Lit>>
-  convertAssumptions(literal_set assumptions);
-  literal_set
-  convertConflictToAssumps(Minisat::LSet &conflictLits);
-
-  bool modelSatisfiesAssump(Literal assumption);
-
-  virtual int getLiteralId(Literal literal);
 
 public:
-  MinisatProver();
+  MinisatProver(shared_ptr<Formula> formula);
   ~MinisatProver();
 
-  modal_names_map prepareSAT(FormulaTriple clauses,
-                             name_set extra = name_set());
-  Solution solve(const literal_set &assumptions = literal_set());
-  void addClause(literal_set clause);
+  void prepareSAT(shared_ptr<Formula> formula);
+  
+  bool solve(); // true = satisfible, false = unsatisfible
 
-  void printModel();
+
 };
 
 #endif

@@ -32,7 +32,15 @@ shared_ptr<Formula> Diamond::getSubformula() const { return subformula_; }
 void Diamond::incrementPower() { power_++; }
 
 string Diamond::toString() const {
-  return "<" + to_string(modality_) + ">^" + to_string(power_) + " " +
+  string m = "";
+  string p = "";
+  if (modality_!=1){
+    m = to_string(modality_);
+  }
+  if (power_!=1){
+    p = "^" + to_string(power_);
+  }
+  return "<" + m + ">" + p + " " +
          subformula_->toString();
 }
 
@@ -110,6 +118,42 @@ shared_ptr<Formula> Diamond::s4reduction(){
   }
 
 }
+
+
+shared_ptr<Formula> Diamond::s4reductionRecursive(){
+  power_ = 1;
+
+  subformula_ = subformula_->s4reductionRecursive();
+
+  switch (subformula_->getType()) {
+
+  case FDiamond: {
+    Diamond *diamondFormula = dynamic_cast<Diamond *>(subformula_.get());
+    subformula_ = diamondFormula->getSubformula();
+    return shared_from_this();
+  }
+  case FOr: {
+    Or *orFormula = dynamic_cast<Or *>(subformula_.get());
+
+    formula_set orFormulas = orFormula->getSubformulas();
+
+    formula_set newOrSet(orFormulas.size());
+    for (shared_ptr<Formula> formula : orFormulas){
+      shared_ptr<Formula> diamondformula = Diamond::create(formula);
+      newOrSet.insert(diamondformula);
+    }
+
+    shared_ptr<Formula> newOrFormula = Or::create(newOrSet,true);
+    
+    return newOrFormula;
+  }
+
+  default:
+    return shared_from_this();
+  }
+
+}
+
 
 shared_ptr<Formula> Diamond::create(int modality, int power,
                                     const shared_ptr<Formula> &subformula) {

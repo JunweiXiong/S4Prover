@@ -24,6 +24,8 @@ public:
   virtual shared_ptr<Formula> simplify() = 0;
   virtual shared_ptr<Formula> modalFlatten() = 0;
   virtual shared_ptr<Formula> s4reduction() = 0;
+  virtual shared_ptr<Formula> s4reductionRecursive() = 0;
+  virtual shared_ptr<Formula>  flatten() = 0;
   virtual bool isClassical() = 0;
   // virtual void toBinary() = 0;
 

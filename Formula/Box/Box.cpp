@@ -32,7 +32,15 @@ shared_ptr<Formula> Box::getSubformula() const { return subformula_; }
 void Box::incrementPower() { power_++; }
 
 string Box::toString() const {
-  return "[" + to_string(modality_) + "]^" + to_string(power_) + " " +
+  string m = "";
+  string p = "";
+  if (modality_!=1){
+    m = to_string(modality_);
+  }
+  if (power_!=1){
+    p = "^"+to_string(power_);
+  }
+  return "[" + m + "]" + p + " " +
          subformula_->toString();
 }
 
@@ -80,6 +88,40 @@ shared_ptr<Formula> Box::modalFlatten() {
 
 shared_ptr<Formula> Box::s4reduction(){
   power_ = 1;
+
+  switch (subformula_->getType()) {
+
+  case FBox: {
+    Box *boxFormula = dynamic_cast<Box *>(subformula_.get());
+    subformula_ = boxFormula->getSubformula(); 
+    return shared_from_this();
+  }
+  case FAnd: {
+    And *andFormula = dynamic_cast<And *>(subformula_.get());
+
+    formula_set andFormulas = andFormula->getSubformulas();
+
+    formula_set newAndSet(andFormulas.size());
+    for (shared_ptr<Formula> formula : andFormulas){
+      shared_ptr<Formula> boxformula = Box::create(formula);
+      newAndSet.insert(boxformula);
+    }
+
+    shared_ptr<Formula> newAndFormula = And::create(newAndSet,true);
+    
+    return newAndFormula;
+  }
+
+  default:
+    return shared_from_this();
+  }
+
+}
+
+shared_ptr<Formula> Box::s4reductionRecursive(){
+  power_ = 1;
+
+  subformula_ = subformula_->s4reductionRecursive();
 
   switch (subformula_->getType()) {
 

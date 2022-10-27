@@ -137,7 +137,33 @@ shared_ptr<Formula> And::modalFlatten() {
   return shared_from_this();
 }
 
+shared_ptr<Formula> And::flatten() {
+  formula_set newAndSet;
+  for (shared_ptr<Formula> formula : andSet_) {
+    formula = formula->flatten();
+    And *andFormula = dynamic_cast<And *>(formula.get());
+    if (andFormula) {
+      const formula_set *subformulas = andFormula->getSubformulasReference();
+      newAndSet.insert(subformulas->begin(), subformulas->end());
+    } else {
+      newAndSet.insert(formula);
+    }
+  }
+  andSet_ = newAndSet;
+  return shared_from_this();
+}
+
 shared_ptr<Formula> And::s4reduction(){
+  return shared_from_this();
+}
+
+shared_ptr<Formula> And::s4reductionRecursive(){
+  formula_set newAndSet;
+  for (shared_ptr<Formula> f : andSet_){
+    f = f->s4reductionRecursive();
+    newAndSet.insert(f);
+  }
+  andSet_ = newAndSet;
   return shared_from_this();
 }
 

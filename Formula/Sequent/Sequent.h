@@ -8,13 +8,31 @@
 #include "../Formula/Formula.h"
 #include "../True/True.h"
 #include "../AtomGenerator/AtomGenerator.h"
+#include "../../S4Prover/FormulaExtraction.h"
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <unordered_set>
+#include <stack>
 
 using namespace std;
+
+
+struct Theta {
+  formula_set blackbox;
+  formula_set blackdia;
+};
+
+struct Gamma {
+  formula_set boxL;
+  formula_set boxdiaL;
+  formula_set boxLbox;
+  formula_set boxLdia;
+};
+
+
+
 
 class Sequent {
   
@@ -53,10 +71,28 @@ public:
   ~Sequent();
 
   Sequent copy();
-  vector<Sequent> normalReduction();
+  // vector<Sequent> normalReduction();
   bool isNormal();
-  bool isCluster();
   bool isRegular();
+
+  void toCluster();
+  // void clearTheta();
+  // void clearGammaSpecial();
+  // void clearGammaClassic();
+  // void clearDeltaSpecial();
+  // void clearDeltaClassic();
+
+  void clear();
+  
+  void addTheta(Theta t);
+  void addGamma(Gamma g);
+  void addGamma_cl(formula_set formulas);
+  void addDelta(formula_set formulas);
+  void addDelta_cl(formula_set formulas);
+
+  Theta getTheta();
+  Gamma getGamma();
+  formula_set getGamma_box();
 
   string toString() const;
 

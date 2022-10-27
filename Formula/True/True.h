@@ -24,7 +24,9 @@ public:
   shared_ptr<Formula> simplify();
   shared_ptr<Formula> modalFlatten();
   shared_ptr<Formula> s4reduction();
+  shared_ptr<Formula> s4reductionRecursive();
   bool isClassical() {return true;};
+  shared_ptr<Formula> flatten(){return shared_from_this();};
   // void toBinary() {};
 
   shared_ptr<Formula> clone() const;
