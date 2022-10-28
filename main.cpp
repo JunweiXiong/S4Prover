@@ -36,46 +36,48 @@ int main(int argc, char *argv[]){
   formula = Not::create(formula);
   formula = formula->s4reductionRecursive();
 
-  cout << formula->toString() << endl;
+  // cout << formula->toString() << endl;
   
   Sequent sequent;
   sequent.right_.insert(formula);
 
-  cout << "regular sequent " << endl;
-  cout << sequent.toString() << endl;
+  // cout << "regular sequent " << endl;
+  // cout << sequent.toString() << endl;
 
-  cout << "start reduction" << endl;
+  // cout << "start reduction" << endl;
   vector<Sequent> normal_sequents = NormalReduction::reduction(sequent);
-  cout << "end reduction" << endl;
+  // cout << "end reduction" << endl;
 
   // for (Sequent s : normal_sequents){
   //   cout << "normal sequent " << endl;
   //   cout << s.toString() << endl;
   // }
 
-  cout << "normal sequent number: " << normal_sequents.size() << endl;
+  // cout << "normal sequent number: " << normal_sequents.size() << endl;
 
 
-  cout << "start search" << endl;
+  // cout << "start search" << endl;
   bool valid = true;
   int counter = 0;
   for (Sequent s : normal_sequents){
-    cout << s.blackbox_.size()<< " " << s.blackdia_.size() << " " << s.boxL_.size() << " " << 
-    s.boxdiaL_.size() << " " << s.boxLbox_.size() << " " << s.boxLdia_.size() <<  "  diaB " << s.diaL_.size() <<  " " <<
-    s.classicL_.size()<< " " << s.boxR_.size()<< " " << s.classicR_.size()  << endl;
+    // cout << s.blackbox_.size()<< " " << s.blackdia_.size() << " " << s.boxL_.size() << " " << 
+    // s.boxdiaL_.size() << " " << s.boxLbox_.size() << " " << s.boxLdia_.size() <<  "  diaB " << s.diaL_.size() <<  " " <<
+    // s.classicL_.size()<< " " << s.boxR_.size()<< " " << s.classicR_.size()  << endl;
     counter++;
     if (!Search::search(s)){
       valid = false;
       break;
     }
-    cout << counter << endl;
+    // cout << counter << endl;
   }
-  cout  << endl << "end search" << endl;
+  // cout  << endl << "end search" << endl;
 
   if (valid){
-    cout << valid << "negation valid means unsatisfible" << endl;
+    cout << "unsatisfible" << endl;
+    // cout << valid << "negation valid means unsatisfible" << endl;
   }else{
-    cout << valid << "negation refutable means satisfible" << endl;
+    cout << "satisfible" << endl;
+    // cout << valid << "negation refutable means satisfible" << endl;
   }
 
 }

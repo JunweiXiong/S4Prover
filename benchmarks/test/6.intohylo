@@ -1,0 +1,1 @@
+((box(p & box p => q) v box(q & box q => p)) => (box(p v q) & box(box p v q) & box(p v box q) => box p v box q))

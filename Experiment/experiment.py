@@ -37,7 +37,7 @@ def compare_times(haskell_file, cpp_file):
     haskell_start = time.time()
     try:
         haskell_result = subprocess.check_output(
-            [os.path.expanduser('~')+"/.cabal/bin/CEGARBox", haskell_file], timeout=TIMEOUT).decode("utf-8").strip()
+            [os.path.expanduser('~')+"/.cabal/bin/CEGARBox", "--reflexive-transitive",haskell_file], timeout=TIMEOUT).decode("utf-8").strip()
     except subprocess.TimeoutExpired:
         haskell_result = "timeout"
     except Exception as e:
@@ -48,7 +48,7 @@ def compare_times(haskell_file, cpp_file):
     haskell_optim_start = time.time()
     try:
         haskell_optim_result = subprocess.check_output(
-            [os.path.expanduser('~')+"/.cabal/bin/CEGARBoxOptim", haskell_file], timeout=TIMEOUT).decode("utf-8").strip()
+            [os.path.expanduser('~')+"/.cabal/bin/CEGARBoxOptim", "--reflexive-transitive", haskell_file], timeout=TIMEOUT).decode("utf-8").strip()
     except subprocess.TimeoutExpired:
         haskell_optim_result = "timeout"
     except Exception as e:
@@ -59,7 +59,7 @@ def compare_times(haskell_file, cpp_file):
     cpp_start = time.time()
     try:
         cpp_result = subprocess.check_output(
-            ["./main", "-f", cpp_file], timeout=TIMEOUT).decode("utf-8").strip()
+            ["./CEGARCPP_main", "-f", cpp_file, "-t","-4"], timeout=TIMEOUT).decode("utf-8").strip()
     except subprocess.TimeoutExpired:
         cpp_result = "timeout"
     except Exception as e:
@@ -68,15 +68,25 @@ def compare_times(haskell_file, cpp_file):
 
     cpp_end = time.time()
 
-    # if cpp_result != haskell_result and cpp_result != "timeout" and haskell_result != "timeout" and cpp_result != "exception" and haskell_result != "exception":
-    #     print("Inconsistant result on", cpp_file, "cpp got", cpp_result,
-    #           "while haskell got", haskell_result)
+    fiorentini_start = time.time()
+    try:
+        fiorentini_result = subprocess.check_output(
+            ["./main", cpp_file], timeout=TIMEOUT).decode("utf-8").strip()
+    except subprocess.TimeoutExpired:
+        fiorentini_result = "timeout"
+    except Exception as e:
+        fiorentini_result = "exception"
+        print("GOT EXCEPTION", e)
 
+    fiorentini_end = time.time()
+
+    fiorentini_time = fiorentini_end - fiorentini_start
     cpp_time = cpp_end - cpp_start
     haskell_time = haskell_end - haskell_start
     haskell_optim_time = haskell_optim_end - haskell_optim_start
 
-    return cpp_time, haskell_time, haskell_optim_time, cpp_result, haskell_result, haskell_optim_result
+
+    return fiorentini_time, cpp_time, haskell_time, haskell_optim_time, fiorentini_result,cpp_result, haskell_result, haskell_optim_result
   
 
 def run_experiment(haskell_files, cpp_files):
@@ -84,44 +94,50 @@ def run_experiment(haskell_files, cpp_files):
     satisfiable = 0
     unsatisfiable = 0
 
+    fiorentini_times = {}
     cpp_times = {}
     haskell_times = {}
     haskell_optim_times = {}
+    fiorentini_results = {}
     cpp_results = {}
     haskell_results = {}
     haskell_optim_results = {}
     file_path = {}
     try:
         for group in haskell_files:
+            fiorentini_times[group] = []
             cpp_times[group] = []
             haskell_times[group] = []
             haskell_optim_times[group] = []
+            fiorentini_results[group] = []
             cpp_results[group] = []
             haskell_results[group] = []
             haskell_optim_results[group] = []
             file_path[group] = []
             for file1, file2 in zip(haskell_files[group], cpp_files[group]):
                 print(file1, file2)
-                cpp_time, haskell_time, haskell_optim_time, cpp_result, haskell_result, haskell_optim_result = compare_times(
+                fiorentini_time,cpp_time, haskell_time, haskell_optim_time, fiorentini_result,cpp_result, haskell_result, haskell_optim_result = compare_times(
                     file1, file2)
+                fiorentini_times[group].append(fiorentini_time)
                 cpp_times[group].append(cpp_time)
                 haskell_times[group].append(haskell_time)
                 haskell_optim_times[group].append(haskell_optim_time)
+                fiorentini_results[group].append(fiorentini_result)
                 cpp_results[group].append(cpp_result)
                 haskell_results[group].append(haskell_result)
                 haskell_optim_results[group].append(haskell_optim_result)
                 file_path[group].append(file1+"  "+file2)
                 
-                keys = ["CPP","Haskell","Haskell_optim"]
-                results = [cpp_result,haskell_result,haskell_optim_result]
-                times = [cpp_time,haskell_time,haskell_optim_time]
+                keys = ["fiorentini","CPP","Haskell","Haskell_optim"]
+                results = [fiorentini_result,cpp_result,haskell_result,haskell_optim_result]
+                times = [fiorentini_time,cpp_time,haskell_time,haskell_optim_time]
                 sorted_index = sorted(range(len(times)), key=lambda k: times[k])
 
                 print(keys[sorted_index[0]],results[sorted_index[0]]," ",keys[sorted_index[1]],results[sorted_index[1]]," ",keys[sorted_index[2]],results[sorted_index[2]])
                 print(keys[sorted_index[0]],times[sorted_index[0]]," ",keys[sorted_index[1]],times[sorted_index[1]]," ",keys[sorted_index[2]],times[sorted_index[2]])
         
                 results = set(
-                    [cpp_result, haskell_result, haskell_optim_result])
+                    [fiorentini_result,cpp_result, haskell_result, haskell_optim_result])
                 if "Satisfiable" in results and "Unsatisfiable" not in results:
                     satisfiable += 1
                 elif "Unsatisfiable" in results and "Satisfiable" not in results:
@@ -129,12 +145,13 @@ def run_experiment(haskell_files, cpp_files):
            
     except KeyboardInterrupt:
         pass
+    print("fiorentini:",fiorentini_times)
     print("CPP:", cpp_times)
     print("Unhas:", haskell_times)
     print("OpHas:", haskell_optim_times)
 
     print("SAT", satisfiable, "UNSAT", unsatisfiable)
-    return haskell_optim_times, haskell_times, cpp_times, haskell_optim_results, haskell_results, cpp_results, file_path
+    return haskell_optim_times, haskell_times, cpp_times, fiorentini_times, haskell_optim_results, haskell_results, cpp_results,fiorentini_results, file_path
 
 
 if __name__ == "__main__":
@@ -149,13 +166,15 @@ if __name__ == "__main__":
 #            haskell_files.pop(k)
 #            cpp_files.pop(k)
 
-    haskell_optim_times, haskell_times, cpp_times, haskell_optim_results, haskell_results, cpp_results, file_path = run_experiment(haskell_files, cpp_files)
+    haskell_optim_times, haskell_times, cpp_times, fiorentini_times, haskell_optim_results, haskell_results, cpp_results, fiorentini_results,file_path = run_experiment(haskell_files, cpp_files)
 
     # store the results
     for group in file_path:
-        data = {"CPP_time":cpp_times[group],
+        data = {"fiorentini_time":fiorentini_times[group],
+            "CPP_time":cpp_times[group],
             "haskell_time":haskell_times[group],
             "haskell_optim_time":haskell_optim_times[group],
+            "fiorentini_result":fiorentini_results[group],
             "CPP_result":cpp_results[group],
             "haskell_result":haskell_results[group],
             "haskell_optim_result":haskell_optim_results[group],
@@ -165,30 +184,38 @@ if __name__ == "__main__":
 
 
     # overall 
+    
+    fiorentini_times_all = []
     cpp_times_all = []
     haskell_times_all = []
     haskell_optim_times_all = []
+    fiorentini_results_all = []
     cpp_results_all = []
     haskell_results_all = []
     haskell_optim_results_all = []
     file_path_all = []
     
     for group in file_path:
+        fiorentini_times_all.extend(fiorentini_times[group])
         cpp_times_all.extend(cpp_times[group])
         haskell_times_all.extend(haskell_times[group])
         haskell_optim_times_all.extend(haskell_optim_times[group])
+        fiorentini_results_all.extend(fiorentini_results[group])
         cpp_results_all.extend(cpp_results[group])
         haskell_results_all.extend(haskell_results[group])
         haskell_optim_results_all.extend(haskell_optim_results[group])
         file_path_all.extend(file_path[group])
         print(group)
+        print(fiorentini_times[group])
         print(haskell_optim_times[group])
         print(haskell_times[group])
         print(cpp_times[group])
 
-    data = {"CPP_time":cpp_times_all,
+    data = {"fiorentini_time":fiorentini_times_all,
+            "CPP_time":cpp_times_all,
             "haskell_time":haskell_times_all,
             "haskell_optim_time":haskell_optim_times_all,
+            "fiorentini_result":fiorentini_results_all,
             "CPP_result":cpp_results_all,
             "haskell_result":haskell_results_all,
             "haskell_optim_result":haskell_optim_results_all,

@@ -1,0 +1,1 @@
+((dia p => box dia p) => (dia p & dia q => dia (dia p & q)))

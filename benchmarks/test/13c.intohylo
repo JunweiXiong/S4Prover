@@ -1,0 +1,1 @@
+(dia box (p => (dia box p)))
