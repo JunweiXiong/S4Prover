@@ -13,31 +13,18 @@ Run ``./compile.sh`` to compile CEGARBox
 ## Input Formula
 CEGARBox accepts file input. Input is terminated by a newline and valid input formula are defined by the following grammar:
 ```
-Index ::= Nat || -Nat
 Atom ::= Alphanumeric String
 Formula ::=
  Atom || $true || $false || ~Formula ||
- [Index] Formula || <Index> Formula || []Formula || <>Formula || 
+ [] Formula || <> Formula || 
  Formula | Formula || Formula & Formula || Formula => Formula || 
  Formula <=> Formula || (Formula) 
 ```
 
-Here, negative numbers are used to define converse for tense logic. For example ``[-1]`` is the converse of ``[1]``.
-
 ## Run Theorem Prover
 
-``./main -f <input_file> [options]``
-
-Options:
-
-* Reflexivity: ``--reflexive`` or ``-t``
-* Symmetry: ``--symmetric`` or ``-b``
-* Transitivity: ``--transitive`` or ``-4``
-* Seriality: ``--serial`` or ``-d``
-* Euclidean: ``--euclidean`` or ``-e``
-* Valid (whether input formula is valid): ``--valid`` or ``-a``
-* Tense: ``--tense`` or `-n`
-* Verbose: ``--verbose`` or `-v`
+``./main <input_file>``
+ 
 
 ## Benchmarks
 
